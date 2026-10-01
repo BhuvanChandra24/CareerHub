@@ -16,7 +16,7 @@ function getBoolean(value) {
 const clientOrigins = (
   process.env.CLIENT_ORIGINS ||
   process.env.CLIENT_ORIGIN ||
-  "http://localhost:5173"
+  "https://career-hub-sooty-eta.vercel.app"
 )
   .split(",")
   .map((origin) => origin.trim())

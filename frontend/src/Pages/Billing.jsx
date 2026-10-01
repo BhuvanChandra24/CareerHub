@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, CreditCard, RefreshCw, ShieldCheck } from "lucide-react";
 const API = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com"
 ).replace(/\/$/, "");
 const token = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token") || "";

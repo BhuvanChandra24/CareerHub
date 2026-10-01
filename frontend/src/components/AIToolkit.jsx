@@ -12,7 +12,7 @@ import {
 import "./AIToolkit.css";
 
 const API_BASE = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com/"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com/"
 ).replace(/\/$/, "");
 const tools = [
   {
