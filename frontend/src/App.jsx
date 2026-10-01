@@ -23,7 +23,7 @@ import Billing from "./Pages/Billing.jsx";
 import InfoPage from "./Pages/InfoPage.jsx";
 
 const API_BASE = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com/"
 ).replace(/\/$/, "");
 const readSession = () => ({
   token: localStorage.getItem("token") || sessionStorage.getItem("token") || "",

@@ -50,7 +50,7 @@ export default function SignUp() {
     setSubmitting(true);
     setError("");
     const apiUrl = (
-      import.meta.env.VITE_API_URL || "http://localhost:5000"
+      import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com/"
     ).replace(/\/$/, "");
     fetch(`${apiUrl}/api/auth/signup`, {
       method: "POST",
