@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
 
 function ScoreCircle({ score }) {
@@ -73,7 +72,9 @@ function ResultList({ title, items, icon: Icon, color = "neutral" }) {
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}
+        >
           <Icon size={19} />
         </div>
         <h3 className="font-semibold">{title}</h3>
@@ -88,8 +89,14 @@ function ResultList({ title, items, icon: Icon, color = "neutral" }) {
                 : item?.message || item?.name || item?.text || "";
 
             return (
-              <li key={`${text}-${index}`} className="flex gap-2.5 text-sm leading-6 text-neutral-600">
-                <CheckCircle2 size={16} className="mt-1 shrink-0 text-neutral-400" />
+              <li
+                key={`${text}-${index}`}
+                className="flex gap-2.5 text-sm leading-6 text-neutral-600"
+              >
+                <CheckCircle2
+                  size={16}
+                  className="mt-1 shrink-0 text-neutral-400"
+                />
                 <span>{text}</span>
               </li>
             );
@@ -162,7 +169,7 @@ export default function ResumeATS() {
 
       if (!response.ok) {
         throw new Error(
-          data.message || data.error || "Resume analysis failed."
+          data.message || data.error || "Resume analysis failed.",
         );
       }
 
@@ -170,7 +177,7 @@ export default function ResumeATS() {
 
       if (!Number.isFinite(score)) {
         throw new Error(
-          "The API response did not contain a valid score or atsScore."
+          "The API response did not contain a valid score or atsScore.",
         );
       }
 
@@ -181,7 +188,7 @@ export default function ResumeATS() {
     } catch (err) {
       setError(
         err.message ||
-          "Unable to connect to the resume analysis service. Check your backend."
+          "Unable to connect to the resume analysis service. Check your backend.",
       );
     } finally {
       setLoading(false);
@@ -223,9 +230,15 @@ export default function ResumeATS() {
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm text-neutral-600 md:flex">
-            <Link to="/" className="hover:text-black">Home</Link>
-            <Link to="/jobs" className="hover:text-black">Jobs</Link>
-            <Link to="/resume-jobs" className="hover:text-black">AI Job Match</Link>
+            <Link to="/" className="hover:text-black">
+              Home
+            </Link>
+            <Link to="/jobs" className="hover:text-black">
+              Jobs
+            </Link>
+            <Link to="/resume-jobs" className="hover:text-black">
+              AI Job Match
+            </Link>
           </nav>
 
           <Link
@@ -375,8 +388,8 @@ export default function ResumeATS() {
 
             <div className="mt-5 flex items-start gap-2 text-xs leading-5 text-neutral-500">
               <ShieldCheck size={16} className="mt-0.5 shrink-0" />
-              Your resume is sent to the configured backend for analysis.
-              Only upload documents you have permission to share.
+              Your resume is sent to the configured backend for analysis. Only
+              upload documents you have permission to share.
             </div>
           </section>
 
@@ -418,7 +431,10 @@ export default function ResumeATS() {
 
             {loading && (
               <div className="flex min-h-[450px] flex-col items-center justify-center rounded-3xl border border-neutral-200 bg-white p-8 text-center">
-                <LoaderCircle size={42} className="animate-spin text-blue-600" />
+                <LoaderCircle
+                  size={42}
+                  className="animate-spin text-blue-600"
+                />
                 <h2 className="mt-5 text-xl font-semibold">
                   Analyzing your resume
                 </h2>
@@ -441,7 +457,9 @@ export default function ResumeATS() {
                         Resume analysis complete
                       </p>
 
-                      <h2 className={`mt-2 text-2xl font-semibold ${scoreColor(result.score)}`}>
+                      <h2
+                        className={`mt-2 text-2xl font-semibold ${scoreColor(result.score)}`}
+                      >
                         {scoreLabel(result.score)}
                       </h2>
 
@@ -510,7 +528,7 @@ export default function ResumeATS() {
                           </span>
                           <span className="text-sm font-medium">
                             {typeof value === "object"
-                              ? value.score ?? value.status ?? "Reviewed"
+                              ? (value.score ?? value.status ?? "Reviewed")
                               : String(value)}
                           </span>
                         </div>

@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 
 const GROQ_API_KEY = (process.env.GROQ_API_KEY || "").trim();
@@ -15,7 +14,7 @@ export async function generateAIText({
 }) {
   if (!GROQ_API_KEY) {
     const error = new Error(
-      "Groq AI is not configured. Add GROQ_API_KEY to Backend/backend/.env."
+      "Groq AI is not configured. Add GROQ_API_KEY to Backend/backend/.env.",
     );
     error.status = 503;
     throw error;
@@ -36,7 +35,7 @@ export async function generateAIText({
           {
             role: "system",
             content: String(
-              system || "You are CareerHub AI. Be accurate and useful."
+              system || "You are CareerHub AI. Be accurate and useful.",
             ),
           },
           {
@@ -53,7 +52,7 @@ export async function generateAIText({
     const error = new Error(
       cause?.name === "TimeoutError" || cause?.name === "AbortError"
         ? "Groq API request timed out. Please try again."
-        : `Could not connect to Groq API: ${cause?.message || "Network error"}`
+        : `Could not connect to Groq API: ${cause?.message || "Network error"}`,
     );
     error.status = 502;
     throw error;
@@ -64,7 +63,7 @@ export async function generateAIText({
     const error = new Error(
       `Groq API returned HTTP ${response.status}${
         body ? `: ${body.slice(0, 400)}` : ""
-      }`
+      }`,
     );
 
     error.status = response.status === 429 ? 429 : 502;
@@ -76,9 +75,7 @@ export async function generateAIText({
 
   const text = Array.isArray(result)
     ? result
-        .map((part) =>
-          typeof part === "string" ? part : part.text || ""
-        )
+        .map((part) => (typeof part === "string" ? part : part.text || ""))
         .join("")
         .trim()
     : typeof result === "string"
@@ -87,7 +84,7 @@ export async function generateAIText({
 
   if (!text) {
     const error = new Error(
-      "Groq returned an empty response. Check the model and API access."
+      "Groq returned an empty response. Check the model and API access.",
     );
     error.status = 502;
     throw error;

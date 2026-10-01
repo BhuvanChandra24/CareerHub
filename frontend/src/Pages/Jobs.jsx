@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -20,12 +19,18 @@ import {
 
 import careerHubLogo from "../assets/careerhub.png";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com";
 
 function cleanText(value) {
   if (value == null) return "";
   if (typeof value !== "string") return String(value);
-  return value.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getHostname(url) {
@@ -37,30 +42,120 @@ function getHostname(url) {
 }
 
 function normalizeJob(raw, index) {
-  const locationValue = raw.location ?? raw.job_location ?? raw.location_name ?? raw.city ?? "Location not specified";
-  const location = typeof locationValue === "string"
-    ? locationValue
-    : [locationValue.city, locationValue.state, locationValue.country, locationValue.display_name]
-        .filter(Boolean).join(", ") || "Location not specified";
-  const title = cleanText(raw.role ?? raw.title ?? raw.job_title ?? raw.position ?? raw.name);
-  const company = cleanText(raw.company ?? raw.company_name ?? raw.employer_name ?? raw.organization ?? raw.employer ?? "Company not specified");
-  const applyUrl = raw.applyUrl ?? raw.apply_url ?? raw.job_url ?? raw.redirect_url ?? raw.url ?? raw.link ?? "";
+  const locationValue =
+    raw.location ??
+    raw.job_location ??
+    raw.location_name ??
+    raw.city ??
+    "Location not specified";
+  const location =
+    typeof locationValue === "string"
+      ? locationValue
+      : [
+          locationValue.city,
+          locationValue.state,
+          locationValue.country,
+          locationValue.display_name,
+        ]
+          .filter(Boolean)
+          .join(", ") || "Location not specified";
+  const title = cleanText(
+    raw.role ?? raw.title ?? raw.job_title ?? raw.position ?? raw.name,
+  );
+  const company = cleanText(
+    raw.company ??
+      raw.company_name ??
+      raw.employer_name ??
+      raw.organization ??
+      raw.employer ??
+      "Company not specified",
+  );
+  const applyUrl =
+    raw.applyUrl ??
+    raw.apply_url ??
+    raw.job_url ??
+    raw.redirect_url ??
+    raw.url ??
+    raw.link ??
+    "";
   const rawSkills = raw.skills ?? raw.tags ?? raw.requirements ?? [];
   const skills = Array.isArray(rawSkills)
-    ? rawSkills.map((item) => cleanText(typeof item === "string" ? item : item?.name ?? item?.label)).filter(Boolean)
-    : typeof rawSkills === "string" ? rawSkills.split(/[,|]/).map((item) => item.trim()).filter(Boolean) : [];
-  const rawType = cleanText(raw.type ?? raw.job_type ?? raw.employment_type ?? raw.employmentType ?? "");
-  const type = /intern/i.test(rawType) ? "Internship" : /contract|temporary|freelance/i.test(rawType) ? "Contract" : /part.?time/i.test(rawType) ? "Part-time" : /full.?time/i.test(rawType) ? "Full-time" : rawType || "Not specified";
-  const postedAt = raw.postedAt ?? raw.posted_at ?? raw.date_posted ?? raw.created_at ?? raw.published_at ?? "";
-  const source = cleanText(raw.source ?? raw.provider ?? raw.job_board ?? raw.board ?? (applyUrl ? getHostname(applyUrl) : "CareerHub source"));
-  const description = cleanText(raw.description ?? raw.job_description ?? raw.summary ?? "No description provided by the source.");
-  const id = raw.id ?? raw.job_id ?? raw.slug ?? applyUrl ?? `${company}-${title}-${index}`;
+    ? rawSkills
+        .map((item) =>
+          cleanText(
+            typeof item === "string" ? item : (item?.name ?? item?.label),
+          ),
+        )
+        .filter(Boolean)
+    : typeof rawSkills === "string"
+      ? rawSkills
+          .split(/[,|]/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [];
+  const rawType = cleanText(
+    raw.type ?? raw.job_type ?? raw.employment_type ?? raw.employmentType ?? "",
+  );
+  const type = /intern/i.test(rawType)
+    ? "Internship"
+    : /contract|temporary|freelance/i.test(rawType)
+      ? "Contract"
+      : /part.?time/i.test(rawType)
+        ? "Part-time"
+        : /full.?time/i.test(rawType)
+          ? "Full-time"
+          : rawType || "Not specified";
+  const postedAt =
+    raw.postedAt ??
+    raw.posted_at ??
+    raw.date_posted ??
+    raw.created_at ??
+    raw.published_at ??
+    "";
+  const source = cleanText(
+    raw.source ??
+      raw.provider ??
+      raw.job_board ??
+      raw.board ??
+      (applyUrl ? getHostname(applyUrl) : "CareerHub source"),
+  );
+  const description = cleanText(
+    raw.description ??
+      raw.job_description ??
+      raw.summary ??
+      "No description provided by the source.",
+  );
+  const id =
+    raw.id ??
+    raw.job_id ??
+    raw.slug ??
+    applyUrl ??
+    `${company}-${title}-${index}`;
 
   return {
-    id: String(id), company: company || "Company not specified", role: title || "Untitled role",
-    location, type, experience: cleanText(raw.experience ?? raw.experience_level ?? raw.seniority ?? "Not specified"),
-    category: cleanText(raw.category?.name ?? raw.category ?? raw.job_category ?? raw.department ?? "Other"),
-    description, skills, source, applyUrl, postedAt,
+    id: String(id),
+    company: company || "Company not specified",
+    role: title || "Untitled role",
+    location,
+    type,
+    experience: cleanText(
+      raw.experience ??
+        raw.experience_level ??
+        raw.seniority ??
+        "Not specified",
+    ),
+    category: cleanText(
+      raw.category?.name ??
+        raw.category ??
+        raw.job_category ??
+        raw.department ??
+        "Other",
+    ),
+    description,
+    skills,
+    source,
+    applyUrl,
+    postedAt,
   };
 }
 
@@ -77,13 +172,23 @@ const initialForm = {
 export default function Jobs() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "null"); }
-    catch { return null; }
+    try {
+      return JSON.parse(
+        localStorage.getItem("user") ||
+          sessionStorage.getItem("user") ||
+          "null",
+      );
+    } catch {
+      return null;
+    }
   });
   const logout = () => {
-    localStorage.removeItem("token"); localStorage.removeItem("user");
-    sessionStorage.removeItem("token"); sessionStorage.removeItem("user");
-    setCurrentUser(null); navigate("/");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setCurrentUser(null);
+    navigate("/");
   };
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("All locations");
@@ -111,22 +216,39 @@ export default function Jobs() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.message || data.error || `Jobs service returned HTTP ${response.status}.`);
+        throw new Error(
+          data.message ||
+            data.error ||
+            `Jobs service returned HTTP ${response.status}.`,
+        );
       }
-      const rawJobs = Array.isArray(data) ? data : data.jobs ?? data.results ?? data.data ?? [];
-      if (!Array.isArray(rawJobs)) throw new Error("The jobs API response must contain an array of jobs.");
-      const normalized = rawJobs.map(normalizeJob).filter((job) => job.role && job.role !== "Untitled role");
+      const rawJobs = Array.isArray(data)
+        ? data
+        : (data.jobs ?? data.results ?? data.data ?? []);
+      if (!Array.isArray(rawJobs))
+        throw new Error("The jobs API response must contain an array of jobs.");
+      const normalized = rawJobs
+        .map(normalizeJob)
+        .filter((job) => job.role && job.role !== "Untitled role");
       const uniqueJobs = [];
       const seen = new Set();
       for (const job of normalized) {
-        const key = (job.applyUrl || `${job.company}|${job.role}|${job.location}`).toLowerCase();
-        if (!seen.has(key)) { seen.add(key); uniqueJobs.push(job); }
+        const key = (
+          job.applyUrl || `${job.company}|${job.role}|${job.location}`
+        ).toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueJobs.push(job);
+        }
       }
       setJobs(uniqueJobs);
       setLastUpdated(new Date());
     } catch (err) {
       if (err.name !== "AbortError") {
-        setJobsError(err.message || "Unable to fetch jobs. Check that the CareerHub jobs API is running.");
+        setJobsError(
+          err.message ||
+            "Unable to fetch jobs. Check that the CareerHub jobs API is running.",
+        );
         setJobs([]);
       }
     } finally {
@@ -243,8 +365,7 @@ export default function Jobs() {
       body.append("resume", resume);
 
       const token =
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("token");
+        localStorage.getItem("token") || sessionStorage.getItem("token");
 
       const response = await fetch(`${API_URL}/api/applications`, {
         method: "POST",
@@ -258,7 +379,7 @@ export default function Jobs() {
         throw new Error(
           data.message ||
             data.error ||
-            "Application could not be submitted. Check your backend API."
+            "Application could not be submitted. Check your backend API.",
         );
       }
 
@@ -271,7 +392,7 @@ export default function Jobs() {
     } catch (err) {
       setError(
         err.message ||
-          "Unable to connect to the application server. Please try again."
+          "Unable to connect to the application server. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -286,7 +407,11 @@ export default function Jobs() {
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link to="/" aria-label="CareerHub home" className="flex shrink-0 items-center">
+          <Link
+            to="/"
+            aria-label="CareerHub home"
+            className="flex shrink-0 items-center"
+          >
             <img
               src={careerHubLogo}
               alt="CareerHub"
@@ -295,22 +420,62 @@ export default function Jobs() {
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm text-neutral-600 md:flex">
-            <Link to="/" className="hover:text-black">Home</Link>
-            <Link to="/jobs" className="font-semibold text-black">Jobs</Link>
-            <Link to="/#features" className="hover:text-black">AI Tools</Link>
+            <Link to="/" className="hover:text-black">
+              Home
+            </Link>
+            <Link to="/jobs" className="font-semibold text-black">
+              Jobs
+            </Link>
+            <Link to="/#features" className="hover:text-black">
+              AI Tools
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
-            {currentUser ? <>
-              <Link to="/profile" className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-50">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{(currentUser.fullName || currentUser.name || currentUser.email || "U").charAt(0).toUpperCase()}</span>
-                <span className="hidden sm:inline">{currentUser.fullName || currentUser.name || "My Profile"}</span>
-              </Link>
-              <button type="button" onClick={logout} className="text-sm font-medium hover:text-blue-600">Logout</button>
-            </> : <>
-              <Link to="/login" className="text-sm font-medium hover:text-blue-600">Login</Link>
-              <Link to="/signup" className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800">Get Started</Link>
-            </>}
+            {currentUser ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-50"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                    {(
+                      currentUser.fullName ||
+                      currentUser.name ||
+                      currentUser.email ||
+                      "U"
+                    )
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+                  <span className="hidden sm:inline">
+                    {currentUser.fullName || currentUser.name || "My Profile"}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-sm font-medium hover:text-blue-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium hover:text-blue-600"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -389,7 +554,9 @@ export default function Jobs() {
               className={inputClass}
             >
               <option>All categories</option>
-              {[...new Set(jobs.map((job) => job.category).filter(Boolean))].map((c) => (
+              {[
+                ...new Set(jobs.map((job) => job.category).filter(Boolean)),
+              ].map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
@@ -420,14 +587,25 @@ export default function Jobs() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {lastUpdated && <span className="text-xs text-neutral-400">Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+            {lastUpdated && (
+              <span className="text-xs text-neutral-400">
+                Updated{" "}
+                {lastUpdated.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            )}
             <button
               type="button"
               onClick={() => fetchJobs()}
               disabled={loadingJobs}
               className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:opacity-60"
             >
-              <RefreshCw size={14} className={loadingJobs ? "animate-spin" : ""} />
+              <RefreshCw
+                size={14}
+                className={loadingJobs ? "animate-spin" : ""}
+              />
               {loadingJobs ? "Refreshing..." : "Refresh jobs"}
             </button>
             <div className="flex items-center gap-2 text-xs text-neutral-500">
@@ -439,17 +617,36 @@ export default function Jobs() {
         {/* Job cards */}
         {loadingJobs && jobs.length === 0 ? (
           <div className="rounded-2xl border border-neutral-200 bg-white px-6 py-16 text-center">
-            <RefreshCw className="mx-auto animate-spin text-blue-600" size={30} />
+            <RefreshCw
+              className="mx-auto animate-spin text-blue-600"
+              size={30}
+            />
             <h3 className="mt-4 text-lg font-semibold">Fetching live jobs</h3>
-            <p className="mt-2 text-sm text-neutral-500">Connecting to the CareerHub jobs service...</p>
+            <p className="mt-2 text-sm text-neutral-500">
+              Connecting to the CareerHub jobs service...
+            </p>
           </div>
         ) : jobsError && jobs.length === 0 ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center">
             <AlertCircle className="mx-auto text-red-600" size={30} />
-            <h3 className="mt-4 text-lg font-semibold text-red-900">Could not load live jobs</h3>
-            <p className="mx-auto mt-2 max-w-2xl text-sm text-red-800">{jobsError}</p>
-            <p className="mx-auto mt-2 max-w-2xl text-xs text-red-700">Expected endpoint: {API_URL}/api/jobs. Connect an authorized job-data provider in your backend; this page does not substitute sample vacancies.</p>
-            <button type="button" onClick={() => fetchJobs()} className="mt-5 rounded-xl bg-black px-5 py-2.5 text-sm text-white">Try again</button>
+            <h3 className="mt-4 text-lg font-semibold text-red-900">
+              Could not load live jobs
+            </h3>
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-red-800">
+              {jobsError}
+            </p>
+            <p className="mx-auto mt-2 max-w-2xl text-xs text-red-700">
+              Expected endpoint: {API_URL}/api/jobs. Connect an authorized
+              job-data provider in your backend; this page does not substitute
+              sample vacancies.
+            </p>
+            <button
+              type="button"
+              onClick={() => fetchJobs()}
+              className="mt-5 rounded-xl bg-black px-5 py-2.5 text-sm text-white"
+            >
+              Try again
+            </button>
           </div>
         ) : filteredJobs.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -472,10 +669,21 @@ export default function Jobs() {
                   </span>
                 </div>
 
-                <p className="mt-5 text-sm font-medium text-neutral-500">{job.company}</p>
+                <p className="mt-5 text-sm font-medium text-neutral-500">
+                  {job.company}
+                </p>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-                  <span className="rounded-md bg-blue-50 px-2 py-1 text-blue-700">Source: {job.source}</span>
-                  {job.postedAt && <span>Posted {Number.isNaN(Date.parse(job.postedAt)) ? cleanText(job.postedAt) : new Date(job.postedAt).toLocaleDateString()}</span>}
+                  <span className="rounded-md bg-blue-50 px-2 py-1 text-blue-700">
+                    Source: {job.source}
+                  </span>
+                  {job.postedAt && (
+                    <span>
+                      Posted{" "}
+                      {Number.isNaN(Date.parse(job.postedAt))
+                        ? cleanText(job.postedAt)
+                        : new Date(job.postedAt).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
 
                 <h3 className="mt-1 text-lg font-semibold tracking-tight">
@@ -527,7 +735,9 @@ export default function Jobs() {
                       Submit via CareerHub <ArrowUpRight size={16} />
                     </button>
                   )}
-                  <span className="text-xs text-neutral-400">Live source listing</span>
+                  <span className="text-xs text-neutral-400">
+                    Live source listing
+                  </span>
                 </div>
               </article>
             ))}
@@ -537,7 +747,9 @@ export default function Jobs() {
             <Search className="mx-auto text-neutral-400" size={30} />
             <h3 className="mt-4 text-lg font-semibold">No matching jobs</h3>
             <p className="mt-2 text-sm text-neutral-500">
-              {jobs.length === 0 ? "No live listings were returned by the connected providers." : "Try another search term or clear your filters."}
+              {jobs.length === 0
+                ? "No live listings were returned by the connected providers."
+                : "Try another search term or clear your filters."}
             </p>
             <button
               type="button"
@@ -699,7 +911,7 @@ export default function Jobs() {
               {/* Resume upload */}
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Upload resume * 
+                  Upload resume *
                 </label>
 
                 <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 px-4 py-7 text-center transition hover:border-blue-400 hover:bg-blue-50/40">
@@ -746,13 +958,19 @@ export default function Jobs() {
               </div>
 
               {error && (
-                <div role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                <div
+                  role="alert"
+                  className="rounded-xl bg-red-50 p-3 text-sm text-red-700"
+                >
                   {error}
                 </div>
               )}
 
               {success && (
-                <div role="status" className="flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-700">
+                <div
+                  role="status"
+                  className="flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-700"
+                >
                   <CheckCircle2 size={18} />
                   {success}
                 </div>
@@ -779,7 +997,9 @@ export default function Jobs() {
               </div>
 
               <p className="text-xs leading-5 text-neutral-400">
-                This form sends your details to the CareerHub backend. For jobs with an original listing link, use “Apply on source” to apply directly through the employer or job board.
+                This form sends your details to the CareerHub backend. For jobs
+                with an original listing link, use “Apply on source” to apply
+                directly through the employer or job board.
               </p>
             </form>
           </section>

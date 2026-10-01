@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import careerHubLogo from "../assets/careerhub.png";
@@ -26,24 +25,49 @@ export default function SignIn() {
 
   useEffect(() => {
     let active = true;
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-    if (!token || !savedUser) return () => { active = false; };
-    const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
-    fetch(`${apiUrl}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const savedUser =
+      localStorage.getItem("user") || sessionStorage.getItem("user");
+    if (!token || !savedUser)
+      return () => {
+        active = false;
+      };
+    const apiUrl = (
+      import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
+    ).replace(/\/$/, "");
+    fetch(`${apiUrl}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.user) throw new Error("Session expired.");
         if (!active) return;
-        (localStorage.getItem("token") ? localStorage : sessionStorage).setItem("user", JSON.stringify(data.user));
-        const requestedRedirect = new URLSearchParams(window.location.search).get("redirect");
-        const safeRedirect = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//") ? requestedRedirect : "/dashboard";
+        (localStorage.getItem("token") ? localStorage : sessionStorage).setItem(
+          "user",
+          JSON.stringify(data.user),
+        );
+        const requestedRedirect = new URLSearchParams(
+          window.location.search,
+        ).get("redirect");
+        const safeRedirect =
+          requestedRedirect &&
+          requestedRedirect.startsWith("/") &&
+          !requestedRedirect.startsWith("//")
+            ? requestedRedirect
+            : "/dashboard";
         navigate(safeRedirect, { replace: true });
       })
       .catch(() => {
-        if (active) [localStorage, sessionStorage].forEach((store) => { store.removeItem("token"); store.removeItem("user"); });
+        if (active)
+          [localStorage, sessionStorage].forEach((store) => {
+            store.removeItem("token");
+            store.removeItem("user");
+          });
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -51,24 +75,37 @@ export default function SignIn() {
     setError("");
     setSubmitting(true);
     try {
-      const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = (
+        import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
+      ).replace(/\/$/, "");
       const response = await fetch(`${apiUrl}/api/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email.trim(), password: form.password }),
+        body: JSON.stringify({
+          email: form.email.trim(),
+          password: form.password,
+        }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
       const storage = form.remember ? localStorage : sessionStorage;
       storage.setItem("token", data.token);
       storage.setItem("user", JSON.stringify(data.user));
-      const requestedRedirect = new URLSearchParams(window.location.search).get("redirect");
-      const safeRedirect = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//")
-        ? requestedRedirect
-        : "/jobs";
+      const requestedRedirect = new URLSearchParams(window.location.search).get(
+        "redirect",
+      );
+      const safeRedirect =
+        requestedRedirect &&
+        requestedRedirect.startsWith("/") &&
+        !requestedRedirect.startsWith("//")
+          ? requestedRedirect
+          : "/jobs";
       navigate(safeRedirect, { replace: true });
     } catch (err) {
-      setError(err.message || "Unable to connect to CareerHub. Check that the backend is running.");
+      setError(
+        err.message ||
+          "Unable to connect to CareerHub. Check that the backend is running.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -115,9 +152,7 @@ export default function SignIn() {
 
             <h1 className="mt-6 text-5xl font-semibold leading-[1.12] tracking-[-0.05em] xl:text-6xl">
               Your next move
-              <span className="block text-neutral-500">
-                starts here.
-              </span>
+              <span className="block text-neutral-500">starts here.</span>
             </h1>
 
             <p className="mt-6 max-w-md text-base leading-8 text-neutral-400">
@@ -170,7 +205,14 @@ export default function SignIn() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                  {error}
+                </div>
+              )}
               <div>
                 <label
                   htmlFor="email"
@@ -194,10 +236,7 @@ export default function SignIn() {
 
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium"
-                  >
+                  <label htmlFor="password" className="text-sm font-medium">
                     Password
                   </label>
 
@@ -240,14 +279,13 @@ export default function SignIn() {
                   onChange={handleChange}
                   className="h-4 w-4 accent-black"
                 />
-                <span className="text-sm text-neutral-600">
-                  Remember me
-                </span>
+                <span className="text-sm text-neutral-600">Remember me</span>
               </label>
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-5 py-4 text-sm font-medium text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2" disabled={submitting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-5 py-4 text-sm font-medium text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2"
+                disabled={submitting}
               >
                 {submitting ? "Signing in..." : "Sign in"} <span>↗</span>
               </button>

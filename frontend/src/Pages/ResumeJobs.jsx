@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
 
 export default function ResumeJobs() {
@@ -86,13 +85,13 @@ export default function ResumeJobs() {
 
       if (!response.ok) {
         throw new Error(
-          data.message || data.error || "Unable to find matching jobs."
+          data.message || data.error || "Unable to find matching jobs.",
         );
       }
 
       if (!Array.isArray(data.jobs)) {
         throw new Error(
-          "The jobs API must return a jobs array. Check your backend response."
+          "The jobs API must return a jobs array. Check your backend response.",
         );
       }
 
@@ -102,13 +101,13 @@ export default function ResumeJobs() {
           ? data.extractedSkills
           : Array.isArray(data.skills)
             ? data.skills
-            : []
+            : [],
       );
       setAnalyzed(true);
     } catch (err) {
       setError(
         err.message ||
-          "Unable to connect to the job matching service. Check your backend."
+          "Unable to connect to the job matching service. Check your backend.",
       );
     } finally {
       setLoading(false);
@@ -127,9 +126,7 @@ export default function ResumeJobs() {
 
   const getMatchScore = (job) => {
     const score = Number(job.matchScore ?? job.matchPercentage);
-    return Number.isFinite(score)
-      ? Math.max(0, Math.min(100, score))
-      : null;
+    return Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : null;
   };
 
   const getApplyLink = (job) => job.applyUrl || job.applicationUrl || job.url;
@@ -149,9 +146,15 @@ export default function ResumeJobs() {
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm text-neutral-600 md:flex">
-            <Link to="/" className="hover:text-black">Home</Link>
-            <Link to="/jobs" className="hover:text-black">All Jobs</Link>
-            <Link to="/resume-optimizer" className="hover:text-black">Resume ATS</Link>
+            <Link to="/" className="hover:text-black">
+              Home
+            </Link>
+            <Link to="/jobs" className="hover:text-black">
+              All Jobs
+            </Link>
+            <Link to="/resume-optimizer" className="hover:text-black">
+              Resume ATS
+            </Link>
           </nav>
 
           <Link
@@ -458,7 +461,9 @@ export default function ResumeJobs() {
                           {job.title || job.jobTitle || "Untitled position"}
                         </h3>
                         <p className="mt-1 text-sm text-neutral-600">
-                          {job.company || job.companyName || "Company not provided"}
+                          {job.company ||
+                            job.companyName ||
+                            "Company not provided"}
                         </p>
                       </div>
 
@@ -560,7 +565,9 @@ export default function ResumeJobs() {
               <Target size={20} />
             </div>
             <div>
-              <h3 className="font-semibold">Want to improve your resume first?</h3>
+              <h3 className="font-semibold">
+                Want to improve your resume first?
+              </h3>
               <p className="mt-2 text-sm leading-6 text-neutral-500">
                 Check your resume structure and keywords before applying.
               </p>

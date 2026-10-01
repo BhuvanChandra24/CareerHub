@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import careerHubLogo from "../assets/careerhub.png";
@@ -50,28 +49,38 @@ export default function SignUp() {
 
     setSubmitting(true);
     setError("");
-    const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+    const apiUrl = (
+      import.meta.env.VITE_API_URL || "http://localhost:5000"
+    ).replace(/\/$/, "");
     fetch(`${apiUrl}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fullName: form.fullName.trim(),
         email: form.email.trim(),
-        password: form.password
-      })
+        password: form.password,
+      }),
     })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.message || "Unable to create account.");
+        if (!response.ok)
+          throw new Error(data.message || "Unable to create account.");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        const requestedRedirect = new URLSearchParams(window.location.search).get("redirect");
-        const safeRedirect = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//")
-          ? requestedRedirect
-          : "/jobs";
+        const requestedRedirect = new URLSearchParams(
+          window.location.search,
+        ).get("redirect");
+        const safeRedirect =
+          requestedRedirect &&
+          requestedRedirect.startsWith("/") &&
+          !requestedRedirect.startsWith("//")
+            ? requestedRedirect
+            : "/jobs";
         navigate(safeRedirect, { replace: true });
       })
-      .catch((err) => setError(err.message || "Unable to connect to CareerHub backend."))
+      .catch((err) =>
+        setError(err.message || "Unable to connect to CareerHub backend."),
+      )
       .finally(() => setSubmitting(false));
   };
 
@@ -110,20 +119,16 @@ export default function SignUp() {
           </div>
 
           <div className="relative max-w-xl">
-            <p className="text-sm text-neutral-400">
-              WELCOME TO CAREERHUB
-            </p>
+            <p className="text-sm text-neutral-400">WELCOME TO CAREERHUB</p>
 
             <h1 className="mt-6 text-5xl font-semibold leading-[1.12] tracking-[-0.05em] xl:text-6xl">
               Your ambition.
-              <span className="block text-neutral-500">
-                Your next move.
-              </span>
+              <span className="block text-neutral-500">Your next move.</span>
             </h1>
 
             <p className="mt-6 max-w-md text-base leading-8 text-neutral-400">
-              Bring your job search, resume, interview preparation, and
-              career goals together in one focused workspace.
+              Bring your job search, resume, interview preparation, and career
+              goals together in one focused workspace.
             </p>
 
             <div className="mt-12 grid grid-cols-2 gap-3">
@@ -167,7 +172,14 @@ export default function SignUp() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                  {error}
+                </div>
+              )}
               <div>
                 <label
                   htmlFor="fullName"
@@ -270,9 +282,7 @@ export default function SignUp() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-4 text-xs font-medium text-neutral-500 hover:text-black"
                   >
                     {showConfirmPassword ? "Hide" : "Show"}
@@ -319,9 +329,11 @@ export default function SignUp() {
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-5 py-4 text-sm font-medium text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2" disabled={submitting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-5 py-4 text-sm font-medium text-white transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2"
+                disabled={submitting}
               >
-                {submitting ? "Creating account..." : "Create account"} <span>↗</span>
+                {submitting ? "Creating account..." : "Create account"}{" "}
+                <span>↗</span>
               </button>
             </form>
 

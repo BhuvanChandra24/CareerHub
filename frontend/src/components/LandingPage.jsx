@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import careerHubLogo from "../assets/careerhub.png"; // Update filename if your asset uses a different name
@@ -100,28 +99,37 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const user = localStorage.getItem("user") || sessionStorage.getItem("user");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      const user =
+        localStorage.getItem("user") || sessionStorage.getItem("user");
       return token && user ? JSON.parse(user) : null;
     } catch {
       return null;
     }
   });
   const logout = () => {
-    localStorage.removeItem("token"); localStorage.removeItem("user");
-    sessionStorage.removeItem("token"); sessionStorage.removeItem("user");
-    setCurrentUser(null); setMenuOpen(false); navigate("/");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setCurrentUser(null);
+    setMenuOpen(false);
+    navigate("/");
   };
 
   // Send authenticated users to their dashboard; only new/signed-out users see signup.
   const handleStartJourney = () => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     navigate(token ? "/dashboard" : "/signup");
   };
 
   const handleAIToolClick = (toolId) => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const storedUser =
+      localStorage.getItem("user") || sessionStorage.getItem("user");
     const isSignedIn = Boolean(token && storedUser);
     const target = `/ai-tools?tool=${encodeURIComponent(toolId)}`;
 
@@ -200,29 +208,69 @@ export default function LandingPage() {
                 >
                   {item.label}
                 </button>
-              )
+              ),
             )}
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 md:flex">
-            {currentUser ? <>
-              <Link to="/profile" className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium hover:bg-neutral-50">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">{(currentUser.fullName || currentUser.name || currentUser.email || "U").charAt(0).toUpperCase()}</span>
-                <span>{currentUser.fullName || currentUser.name || "My Profile"}</span>
-              </Link>
-              <button type="button" onClick={logout} className="text-sm font-medium text-neutral-600 hover:text-black">Logout</button>
-            </> : <>
-              <Link to="/login" className="text-sm font-medium text-neutral-700 transition hover:text-black">Login</Link>
-              <Link to="/signup" className="group inline-flex items-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-800">Get Started <ArrowUpRight size={16} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></Link>
-            </>}
+            {currentUser ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium hover:bg-neutral-50"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                    {(
+                      currentUser.fullName ||
+                      currentUser.name ||
+                      currentUser.email ||
+                      "U"
+                    )
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+                  <span>
+                    {currentUser.fullName || currentUser.name || "My Profile"}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-sm font-medium text-neutral-600 hover:text-black"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-neutral-700 transition hover:text-black"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="group inline-flex items-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-800"
+                >
+                  Get Started{" "}
+                  <ArrowUpRight
+                    size={16}
+                    className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMenuOpen((prev) => !prev)}
-            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              menuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
             aria-expanded={menuOpen}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 md:hidden"
           >
@@ -253,17 +301,48 @@ export default function LandingPage() {
                   >
                     {item.label}
                   </button>
-                )
+                ),
               )}
 
               <div className="my-3 border-t border-neutral-200" />
-              {currentUser ? <>
-                <Link to="/profile" onClick={() => setMenuOpen(false)} className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100">My Profile · {currentUser.fullName || currentUser.name || currentUser.email}</Link>
-                <button type="button" onClick={logout} className="rounded-lg px-4 py-3 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-100">Logout</button>
-              </> : <>
-                <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Login</Link>
-                <Link to="/signup" onClick={() => setMenuOpen(false)} className="mt-2 rounded-xl bg-black px-4 py-3 text-center text-sm font-medium text-white">Get Started</Link>
-              </>}
+              {currentUser ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                  >
+                    My Profile ·{" "}
+                    {currentUser.fullName ||
+                      currentUser.name ||
+                      currentUser.email}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="rounded-lg px-4 py-3 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className="mt-2 rounded-xl bg-black px-4 py-3 text-center text-sm font-medium text-white"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
@@ -384,9 +463,7 @@ export default function LandingPage() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                     <BriefcaseBusiness size={18} />
                   </div>
-                  <p className="mt-4 text-sm font-semibold">
-                    Discover jobs
-                  </p>
+                  <p className="mt-4 text-sm font-semibold">Discover jobs</p>
                   <p className="mt-1 text-xs leading-5 text-neutral-500">
                     Find roles that fit your goals.
                   </p>
@@ -396,9 +473,7 @@ export default function LandingPage() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700">
                     <Sparkles size={18} />
                   </div>
-                  <p className="mt-4 text-sm font-semibold">
-                    Use AI tools
-                  </p>
+                  <p className="mt-4 text-sm font-semibold">Use AI tools</p>
                   <p className="mt-1 text-xs leading-5 text-neutral-500">
                     Prepare for your next step.
                   </p>
@@ -565,9 +640,7 @@ export default function LandingPage() {
                     </span>
                   </div>
 
-                  <h3 className="mt-7 text-lg font-semibold">
-                    {tool.title}
-                  </h3>
+                  <h3 className="mt-7 text-lg font-semibold">{tool.title}</h3>
 
                   <p className="mt-3 min-h-[72px] text-sm leading-7 text-neutral-600">
                     {tool.description}
@@ -647,9 +720,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-9 flex flex-col gap-3 border-t border-neutral-200 pt-6 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              © {new Date().getFullYear()} CareerHub. All rights reserved.
-            </p>
+            <p>© {new Date().getFullYear()} CareerHub. All rights reserved.</p>
 
             <p>Built to help you take your next step.</p>
           </div>

@@ -1,13 +1,8 @@
-
 import { config } from "../config.js";
 import { inferCategory, extractSkills } from "../utils.js";
 
 function normalizeJob(raw, source) {
-  const title =
-    raw.title ||
-    raw.position ||
-    raw.job_title ||
-    "Untitled role";
+  const title = raw.title || raw.position || raw.job_title || "Untitled role";
 
   const company =
     raw.company?.display_name ||
@@ -22,46 +17,26 @@ function normalizeJob(raw, source) {
     raw.job_location ||
     "Location not specified";
 
-  const description =
-    raw.description ||
-    raw.snippet ||
-    raw.summary ||
-    "";
+  const description = raw.description || raw.snippet || raw.summary || "";
 
   const applyUrl =
-    raw.redirect_url ||
-    raw.link ||
-    raw.url ||
-    raw.apply_url ||
-    "";
+    raw.redirect_url || raw.link || raw.url || raw.apply_url || "";
 
   const postedAt =
-    raw.created ||
-    raw.updated ||
-    raw.date_posted ||
-    raw.posted_at ||
-    null;
+    raw.created || raw.updated || raw.date_posted || raw.posted_at || null;
 
   return {
     id: String(
-      raw.id ||
-      raw.job_id ||
-      `${source}-${title}-${company}-${applyUrl}`
+      raw.id || raw.job_id || `${source}-${title}-${company}-${applyUrl}`,
     ),
     title,
     role: title,
     company,
     location,
     employment_type:
-      raw.contract_type ||
-      raw.type ||
-      raw.employment_type ||
-      "Not specified",
+      raw.contract_type || raw.type || raw.employment_type || "Not specified",
     type:
-      raw.contract_type ||
-      raw.type ||
-      raw.employment_type ||
-      "Not specified",
+      raw.contract_type || raw.type || raw.employment_type || "Not specified",
     experience_level: raw.experience_level || "",
     category: inferCategory(title),
     description,
@@ -101,9 +76,7 @@ async function fetchAdzuna(query, location) {
   });
 
   if (!response.ok) {
-    const error = new Error(
-      `Adzuna returned HTTP ${response.status}`
-    );
+    const error = new Error(`Adzuna returned HTTP ${response.status}`);
     error.provider = "Adzuna";
     error.status = response.status;
     throw error;
@@ -111,9 +84,7 @@ async function fetchAdzuna(query, location) {
 
   const data = await response.json();
 
-  return (data.results || []).map((job) =>
-    normalizeJob(job, "Adzuna")
-  );
+  return (data.results || []).map((job) => normalizeJob(job, "Adzuna"));
 }
 
 async function fetchJooble(query, location) {
@@ -122,9 +93,7 @@ async function fetchJooble(query, location) {
   }
 
   const response = await fetch(
-    `https://jooble.org/api/${encodeURIComponent(
-      config.joobleApiKey
-    )}`,
+    `https://jooble.org/api/${encodeURIComponent(config.joobleApiKey)}`,
     {
       method: "POST",
       headers: {
@@ -137,13 +106,11 @@ async function fetchJooble(query, location) {
         page: "1",
       }),
       signal: AbortSignal.timeout(15000),
-    }
+    },
   );
 
   if (!response.ok) {
-    const error = new Error(
-      `Jooble returned HTTP ${response.status}`
-    );
+    const error = new Error(`Jooble returned HTTP ${response.status}`);
     error.provider = "Jooble";
     error.status = response.status;
     throw error;
@@ -151,9 +118,7 @@ async function fetchJooble(query, location) {
 
   const data = await response.json();
 
-  return (data.jobs || []).map((job) =>
-    normalizeJob(job, "Jooble")
-  );
+  return (data.jobs || []).map((job) => normalizeJob(job, "Jooble"));
 }
 
 export async function searchJobs({
@@ -179,14 +144,14 @@ export async function searchJobs({
 
   if (providers.length === 0) {
     const error = new Error(
-      "No job provider is configured. Add valid ADZUNA_APP_ID and ADZUNA_APP_KEY, or JOOBLE_API_KEY, to backend/.env."
+      "No job provider is configured. Add valid ADZUNA_APP_ID and ADZUNA_APP_KEY, or JOOBLE_API_KEY, to backend/.env.",
     );
     error.status = 503;
     throw error;
   }
 
   const results = await Promise.allSettled(
-    providers.map((provider) => provider.fetch())
+    providers.map((provider) => provider.fetch()),
   );
 
   const jobs = [];
@@ -204,7 +169,7 @@ export async function searchJobs({
       // Log provider errors without exposing API credentials.
       console.error(
         `${providers[index].name} job search failed:`,
-        result.reason?.message || "Unknown error"
+        result.reason?.message || "Unknown error",
       );
     }
   });
@@ -212,7 +177,7 @@ export async function searchJobs({
   // If every configured provider failed, report a gateway error.
   if (failures.length === providers.length) {
     const error = new Error(
-      "All configured job providers failed. Check your API credentials, provider access, and network connection."
+      "All configured job providers failed. Check your API credentials, provider access, and network connection.",
     );
     error.status = 502;
     error.providers = failures;
@@ -237,10 +202,7 @@ export async function searchJobs({
     return true;
   });
 
-  const safeLimit = Math.min(
-    Math.max(Number(limit) || 50, 1),
-    100
-  );
+  const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
 
   return uniqueJobs.slice(0, safeLimit);
 }

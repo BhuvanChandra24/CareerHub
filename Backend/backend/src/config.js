@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 
 function getNumber(value, fallback) {
@@ -7,10 +6,18 @@ function getNumber(value, fallback) {
 }
 
 function getBoolean(value) {
-  return String(value || "").trim().toLowerCase() === "true";
+  return (
+    String(value || "")
+      .trim()
+      .toLowerCase() === "true"
+  );
 }
 
-const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || "http://localhost:5173")
+const clientOrigins = (
+  process.env.CLIENT_ORIGINS ||
+  process.env.CLIENT_ORIGIN ||
+  "http://localhost:5173"
+)
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -18,9 +25,7 @@ const clientOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN |
 export const config = {
   port: getNumber(process.env.PORT, 5000),
 
-  mongoUri:
-    process.env.MONGODB_URI ||
-    "mongodb://127.0.0.1:27017/careerhub",
+  mongoUri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/careerhub",
 
   jwtSecret: process.env.JWT_SECRET || "",
 
@@ -31,9 +36,7 @@ export const config = {
   // Adzuna credentials
   adzunaAppId: process.env.ADZUNA_APP_ID?.trim() || "",
   adzunaAppKey: process.env.ADZUNA_APP_KEY?.trim() || "",
-  adzunaCountry: (
-    process.env.ADZUNA_COUNTRY || "in"
-  ).trim().toLowerCase(),
+  adzunaCountry: (process.env.ADZUNA_COUNTRY || "in").trim().toLowerCase(),
 
   // Jooble credentials
   joobleApiKey: process.env.JOOBLE_API_KEY?.trim() || "",
@@ -47,16 +50,18 @@ if (!config.jwtSecret) {
     throw new Error("JWT_SECRET must be configured in production.");
   }
   console.warn(
-    "WARNING: JWT_SECRET is not configured. Add a strong secret to your .env file."
+    "WARNING: JWT_SECRET is not configured. Add a strong secret to your .env file.",
   );
 }
 
 if (process.env.NODE_ENV === "production" && config.jwtSecret.length < 32) {
-  throw new Error("JWT_SECRET must contain at least 32 characters in production.");
+  throw new Error(
+    "JWT_SECRET must contain at least 32 characters in production.",
+  );
 }
 
 if (!config.adzunaAppId && !config.joobleApiKey) {
   console.warn(
-    "WARNING: No job provider credentials found. Configure Adzuna or Jooble in .env."
+    "WARNING: No job provider credentials found. Configure Adzuna or Jooble in .env.",
   );
 }

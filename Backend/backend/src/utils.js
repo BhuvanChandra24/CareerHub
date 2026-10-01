@@ -1,7 +1,5 @@
-
 export function asyncHandler(fn) {
-  return (req, res, next) =>
-    Promise.resolve(fn(req, res, next)).catch(next);
+  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
 /**
@@ -22,7 +20,7 @@ export function requireText(value, fieldName = "Text", maxLength = 5000) {
 
   if (text.length > maxLength) {
     const error = new Error(
-      `${fieldName} must not exceed ${maxLength} characters.`
+      `${fieldName} must not exceed ${maxLength} characters.`,
     );
     error.status = 400;
     throw error;
@@ -77,14 +75,11 @@ export function extractSkills(text = "") {
   const normalized = String(text).toLowerCase();
 
   return vocabulary.filter((skill) => {
-    const escaped = skill
-      .toLowerCase()
-      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escaped = skill.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    return new RegExp(
-      `(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`,
-      "i"
-    ).test(normalized);
+    return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i").test(
+      normalized,
+    );
   });
 }
 
@@ -120,9 +115,7 @@ export function inferCategory(title = "") {
   }
 
   if (
-    /software|developer|engineer|frontend|backend|full stack|web/.test(
-      value
-    )
+    /software|developer|engineer|frontend|backend|full stack|web/.test(value)
   ) {
     return "Software Engineering";
   }
