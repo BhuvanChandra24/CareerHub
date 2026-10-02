@@ -118,6 +118,7 @@ export default function ResumeATS() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [jobDescription, setJobDescription] = useState("");
 
   const validateFile = (selectedFile) => {
     if (!selectedFile) return false;
@@ -159,6 +160,8 @@ export default function ResumeATS() {
     try {
       const formData = new FormData();
       formData.append("resume", file);
+      if (jobDescription.trim())
+        formData.append("jobDescription", jobDescription.trim());
 
       const response = await fetch(`${API_URL}/api/resume/analyze`, {
         method: "POST",
@@ -335,6 +338,23 @@ export default function ResumeATS() {
               </div>
             )}
 
+            <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+              <label className="text-sm font-semibold">
+                Target job description{" "}
+                <span className="font-normal text-neutral-500">
+                  (optional, but required for a job-specific match)
+                </span>
+              </label>
+              <textarea
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                rows={6}
+                maxLength={12000}
+                placeholder="Paste the job description here to compare skills and keywords against this specific role…"
+                className="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500"
+              />
+            </div>
+
             <button
               type="button"
               onClick={analyzeResume}
@@ -451,6 +471,45 @@ export default function ResumeATS() {
                     employer system.
                   </p>
                 </div>
+
+                {Array.isArray(result.engines) && (
+                  <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-7">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold">
+                          Six-signal ATS analysis
+                        </h3>
+                        <p className="mt-1 text-xs text-neutral-500">
+                          Transparent component scores; not six external ATS
+                          products.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                        {result.scoreType || "ensemble"}
+                      </span>
+                    </div>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {result.engines.map((engine) => (
+                        <div
+                          key={engine.label}
+                          className="rounded-2xl border bg-neutral-50 p-4"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <b className="text-sm">{engine.label}</b>
+                            <span className="text-sm font-bold">
+                              {engine.score == null
+                                ? "—"
+                                : `${engine.score}/100`}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-neutral-500">
+                            {engine.note}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Detail cards */}
                 <div className="grid gap-4 sm:grid-cols-2">

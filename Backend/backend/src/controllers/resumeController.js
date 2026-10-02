@@ -9,7 +9,8 @@ export const analyze = asyncHandler(async (req, res) => {
     return res
       .status(400)
       .json({ message: "Please upload a PDF or DOCX resume." });
-  const result = await analyzeResume(req.file);
+  const jobDescription = String(req.body?.jobDescription || "").trim();
+  const result = await analyzeResume(req.file, { jobDescription });
   res.json(result);
 });
 

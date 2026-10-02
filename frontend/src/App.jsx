@@ -27,6 +27,7 @@ import ResetPassword from "./Pages/ResetPassword.jsx";
 import VerifyEmail from "./Pages/VerifyEmail.jsx";
 import ResumeManager from "./Pages/ResumeManager.jsx";
 import AdminContent from "./Pages/AdminContent.jsx";
+import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import SiteShell from "./components/SiteShell.jsx";
 
 const API_BASE = (
@@ -248,6 +249,16 @@ export default function App() {
             <SiteShell>
               <RequireAuth>
                 <ResumeManager />
+              </RequireAuth>
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <SiteShell>
+              <RequireAuth>
+                <AdminDashboard />
               </RequireAuth>
             </SiteShell>
           }

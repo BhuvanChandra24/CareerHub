@@ -49,6 +49,7 @@ export default function SiteNavbar() {
   }, [user]);
 
   const displayName = user?.fullName || user?.name || "My Profile";
+  const isAdmin = user?.role === "admin";
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -93,6 +94,12 @@ export default function SiteNavbar() {
             </NavLink>
           ))}
         </nav>
+
+        {isAdmin && (
+          <Link to="/admin" className="ch-navbar__link">
+            Admin
+          </Link>
+        )}
 
         <div className="ch-navbar__actions">
           {user ? (
