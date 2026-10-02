@@ -410,17 +410,7 @@ export default function AIToolkit() {
 
   return (
     <main className="ai-toolkit">
-      <header className="ai-toolkit__nav">
-        <Link to="/" className="font-bold text-xl">
-          CareerHub
-        </Link>
 
-        <nav>
-          <Link to="/jobs">Jobs</Link>
-          <Link to="/learning">Career Learning</Link>
-          <Link to="/applications">Applications</Link>
-        </nav>
-      </header>
 
       <section className="ai-toolkit__hero">
         <span className="ai-toolkit__eyebrow">

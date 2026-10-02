@@ -153,21 +153,7 @@ export default function CareerLearning() {
   const Icon = categories.find((x) => x.id === active)?.icon || BookOpen;
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <Link to="/" className="text-xl font-bold">
-            CareerHub
-          </Link>
-          <nav className="flex flex-wrap gap-4 text-sm">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/applications">Applications</Link>
-            <Link to="/ai-tools">AI Tools</Link>
-            <Link to="/workspace/roadmap">Roadmap</Link>
-            <Link to="/billing">Subscription</Link>
-          </nav>
-        </div>
-      </header>
+
       <section className="mx-auto max-w-7xl px-5 py-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
           Career learning

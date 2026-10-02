@@ -139,20 +139,7 @@ export default function ApplicationsTracker() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <Link to="/" className="font-bold text-xl">
-            CareerHub
-          </Link>
-          <nav className="flex flex-wrap gap-4 text-sm">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/ai-tools">AI Toolkit</Link>
-            <Link to="/cover-letter">Cover Letter</Link>
-            <Link to="/workspace/roadmap">Career Roadmap</Link>
-          </nav>
-        </div>
-      </header>
+
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

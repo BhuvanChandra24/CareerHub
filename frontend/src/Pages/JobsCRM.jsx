@@ -39,25 +39,6 @@ const sections = [
 export default function JobsCRM() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <Link to="/" className="text-xl font-bold">
-              CareerHub
-            </Link>
-            <p className="text-xs text-slate-500">Jobs · CRM</p>
-          </div>
-          <nav className="flex flex-wrap gap-4 text-sm">
-            <Link to="/jobs" className="font-semibold">
-              Jobs
-            </Link>
-            <Link to="/companies">Companies</Link>
-            <Link to="/applications">Applications</Link>
-            <Link to="/ai-tools">AI Tools</Link>
-            <Link to="/learning">Career Learning</Link>
-          </nav>
-        </div>
-      </header>
       <section className="mx-auto max-w-7xl px-5 py-10">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">

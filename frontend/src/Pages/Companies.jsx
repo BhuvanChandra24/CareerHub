@@ -192,24 +192,6 @@ export default function Companies() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <Link to="/" className="text-xl font-bold">
-              CareerHub
-            </Link>
-            <p className="text-xs text-slate-500">Jobs · Company CRM</p>
-          </div>
-          <nav className="flex flex-wrap gap-4 text-sm">
-            <Link to="/jobs" className="font-semibold">
-              Jobs
-            </Link>
-            <Link to="/applications">Application Tracker</Link>
-            <Link to="/ai-tools">AI Tools</Link>
-            <Link to="/learning">Career Learning</Link>
-          </nav>
-        </div>
-      </header>
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

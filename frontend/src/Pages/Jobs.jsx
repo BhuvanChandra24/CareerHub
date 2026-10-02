@@ -17,8 +17,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import careerHubLogo from "../assets/careerhub.png";
-
 const API_URL =
   import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com";
 
@@ -405,80 +403,6 @@ export default function Jobs() {
   return (
     <main className="min-h-screen bg-[#f8f9fb] text-neutral-950">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link
-            to="/"
-            aria-label="CareerHub home"
-            className="flex shrink-0 items-center"
-          >
-            <img
-              src={careerHubLogo}
-              alt="CareerHub"
-              className="h-10 w-auto max-w-[210px] object-contain"
-            />
-          </Link>
-
-          <nav className="hidden items-center gap-7 text-sm text-neutral-600 md:flex">
-            <Link to="/" className="hover:text-black">
-              Home
-            </Link>
-            <Link to="/jobs" className="font-semibold text-black">
-              Jobs
-            </Link>
-            <Link to="/#features" className="hover:text-black">
-              AI Tools
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            {currentUser ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-50"
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-                    {(
-                      currentUser.fullName ||
-                      currentUser.name ||
-                      currentUser.email ||
-                      "U"
-                    )
-                      .charAt(0)
-                      .toUpperCase()}
-                  </span>
-                  <span className="hidden sm:inline">
-                    {currentUser.fullName || currentUser.name || "My Profile"}
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="text-sm font-medium hover:text-blue-600"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm font-medium hover:text-blue-600"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-black px-5 py-16 text-white sm:px-8 sm:py-20">

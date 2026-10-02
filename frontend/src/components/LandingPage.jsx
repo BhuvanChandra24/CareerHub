@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import careerHubLogo from "../assets/careerhub.png"; // Update filename if your asset uses a different name
+import SiteNavbar from "./SiteNavbar.jsx";
+import CareerHub from "../assets/careerhub.png";
 import {
   ArrowRight,
   ArrowUpRight,
-  Menu,
-  X,
   BriefcaseBusiness,
   Sparkles,
   FileText,
@@ -96,27 +95,6 @@ const tools = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
-      const user =
-        localStorage.getItem("user") || sessionStorage.getItem("user");
-      return token && user ? JSON.parse(user) : null;
-    } catch {
-      return null;
-    }
-  });
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    setCurrentUser(null);
-    setMenuOpen(false);
-    navigate("/");
-  };
 
   // Send authenticated users to their dashboard; only new/signed-out users see signup.
   const handleStartJourney = () => {
@@ -133,7 +111,6 @@ export default function LandingPage() {
     const isSignedIn = Boolean(token && storedUser);
     const target = `/ai-tools?tool=${encodeURIComponent(toolId)}`;
 
-    setMenuOpen(false);
     if (isSignedIn) {
       navigate(target);
     } else {
@@ -142,7 +119,6 @@ export default function LandingPage() {
   };
 
   const goToSection = (id) => {
-    setMenuOpen(false);
 
     if (id === "jobs") {
       navigate("/jobs-hub");
@@ -173,180 +149,10 @@ export default function LandingPage() {
     });
   };
 
-  // Features has been removed from the header navigation.
-  // The Features section itself remains on the landing page.
-  const navItems = [
-    { label: "Home", id: "home" },
-    { label: "Jobs", id: "jobs" },
-    { label: "AI Tools", id: "ai-tools" },
-    { label: "Career Learning", id: "learning" },
-  ];
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-neutral-950">
-      {/* ================= NAVBAR ================= */}
-      <header className="sticky top-0 z-50 border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
-          {/* Logo */}
-          <Link
-            to="/"
-            onClick={() => setMenuOpen(false)}
-            className="flex shrink-0 items-center whitespace-nowrap"
-            aria-label="CareerHub home"
-          >
-            <img
-              src={careerHubLogo}
-              alt="CareerHub logo"
-              className="h-10 w-auto max-w-[210px] object-contain"
-            />
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navItems.map((item) =>
-              item.id === "jobs" ? (
-                <Link key={item.id} to="/jobs-hub" className="text-sm font-medium text-neutral-600 transition hover:text-black">{item.label}</Link>
-              ) : (
-                <button key={item.id} type="button" onClick={() => goToSection(item.id)} className="text-sm font-medium text-neutral-600 transition hover:text-black">{item.label}</button>
-              ),
-            )}
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden items-center gap-3 md:flex">
-            {currentUser ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium hover:bg-neutral-50"
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-                    {(
-                      currentUser.fullName ||
-                      currentUser.name ||
-                      currentUser.email ||
-                      "U"
-                    )
-                      .charAt(0)
-                      .toUpperCase()}
-                  </span>
-                  <span>
-                    {currentUser.fullName || currentUser.name || "My Profile"}
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="text-sm font-medium text-neutral-600 hover:text-black"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-neutral-700 transition hover:text-black"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="group inline-flex items-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-800"
-                >
-                  Get Started{" "}
-                  <ArrowUpRight
-                    size={16}
-                    className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  />
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            aria-label={
-              menuOpen ? "Close navigation menu" : "Open navigation menu"
-            }
-            aria-expanded={menuOpen}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 md:hidden"
-          >
-            {menuOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {menuOpen && (
-          <div className="border-t border-neutral-200 bg-white px-5 py-5 shadow-lg md:hidden">
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) =>
-                item.id === "jobs" ? (
-                  <Link
-                    key={item.id}
-                    to="/jobs"
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => goToSection(item.id)}
-                    className="rounded-lg px-4 py-3 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-                  >
-                    {item.label}
-                  </button>
-                ),
-              )}
-
-              <div className="my-3 border-t border-neutral-200" />
-              {currentUser ? (
-                <>
-                  <Link
-                    to="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-                  >
-                    My Profile ·{" "}
-                    {currentUser.fullName ||
-                      currentUser.name ||
-                      currentUser.email}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="rounded-lg px-4 py-3 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-lg px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setMenuOpen(false)}
-                    className="mt-2 rounded-xl bg-black px-4 py-3 text-center text-sm font-medium text-white"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-        )}
-      </header>
+      <SiteNavbar />
 
       {/* ================= HERO ================= */}
       <section
@@ -668,7 +474,7 @@ export default function LandingPage() {
             <div>
               <Link to="/" className="inline-flex items-center gap-2.5">
                 <img
-                  src={careerHubLogo}
+                  src={CareerHub}
                   alt="CareerHub logo"
                   className="h-9 w-9 rounded-lg object-contain"
                 />

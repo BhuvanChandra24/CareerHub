@@ -23,6 +23,7 @@ import Billing from "./Pages/Billing.jsx";
 import InfoPage from "./Pages/InfoPage.jsx";
 import Companies from "./Pages/Companies.jsx";
 import JobsCRM from "./Pages/JobsCRM.jsx";
+import SiteShell from "./components/SiteShell.jsx";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com/"
@@ -97,73 +98,166 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/login"
+          element={
+            <SiteShell>
+              <SignIn />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <SiteShell>
+              <SignUp />
+            </SiteShell>
+          }
+        />
         <Route path="/signin" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<Navigate to="/signup" replace />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/jobs-hub" element={<JobsCRM />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/companies" element={<RequireAuth><Companies /></RequireAuth>} />
-        <Route path="/resume-optimizer" element={<ResumeATS />} />
-        <Route path="/resume-jobs" element={<ResumeJobs />} />
+        <Route
+          path="/profile"
+          element={
+            <SiteShell>
+              <Profile />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/jobs-hub"
+          element={
+            <SiteShell>
+              <JobsCRM />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/jobs"
+          element={
+            <SiteShell>
+              <Jobs />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/companies"
+          element={
+            <SiteShell>
+              <RequireAuth>
+                <Companies />
+              </RequireAuth>
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/resume-optimizer"
+          element={
+            <SiteShell>
+              <ResumeATS />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/resume-jobs"
+          element={
+            <SiteShell>
+              <ResumeJobs />
+            </SiteShell>
+          }
+        />
         <Route
           path="/ai-tools"
           element={
-            <RequireAuth>
-              <AIToolkit />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <AIToolkit />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route
           path="/dashboard"
           element={
-            <RequireAuth>
-              <CareerDashboard />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <CareerDashboard />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route
           path="/applications"
           element={
-            <RequireAuth>
-              <ApplicationsTracker />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <ApplicationsTracker />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route
           path="/cover-letter"
           element={
-            <RequireAuth>
-              <CoverLetter />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <CoverLetter />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route
           path="/learning"
           element={
-            <RequireAuth>
-              <CareerLearning />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <CareerLearning />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route
           path="/billing"
           element={
-            <RequireAuth>
-              <Billing />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <Billing />
+              </RequireAuth>
+            </SiteShell>
           }
         />
-        <Route path="/terms" element={<InfoPage />} />
-        <Route path="/privacy" element={<InfoPage />} />
-        <Route path="/forgot-password" element={<InfoPage />} />
+        <Route
+          path="/terms"
+          element={
+            <SiteShell>
+              <InfoPage />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <SiteShell>
+              <InfoPage />
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <SiteShell>
+              <InfoPage />
+            </SiteShell>
+          }
+        />
         <Route
           path="/workspace/:section"
           element={
-            <RequireAuth>
-              <CareerWorkspace />
-            </RequireAuth>
+            <SiteShell>
+              <RequireAuth>
+                <CareerWorkspace />
+              </RequireAuth>
+            </SiteShell>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

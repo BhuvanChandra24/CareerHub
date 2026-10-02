@@ -125,21 +125,7 @@ export default function CareerDashboard() {
   })();
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <Link to="/" className="text-xl font-bold">
-            CareerHub
-          </Link>
-          <nav className="flex flex-wrap gap-4 text-sm">
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/applications">Applications</Link>
-            <Link to="/ai-tools">AI Toolkit</Link>
-            <Link to="/learning">Learning</Link>
-            <Link to="/billing">Billing</Link>
-            <Link to="/profile">Profile</Link>
-          </nav>
-        </div>
-      </header>
+
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

@@ -1,19 +1,372 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Use Poppins as the default font */
-body {
-  font-family: "Poppins", sans-serif;
+:root {
+  --ch-ink: #0a0a0b;
+  --ch-muted: #667085;
+  --ch-line: #e8e8eb;
+  --ch-surface: #ffffff;
+  --ch-page: #f7f8fa;
+  --ch-blue: #2563eb;
 }
 
-/* 👇 Add this AFTER the Tailwind imports */
+html {
+  scroll-behavior: smooth;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: var(--ch-ink);
+  background: var(--ch-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #dbeafe;
+  color: #0f172a;
+}
+
+/* -------------------------------------------------------------------------- */
+/* CareerHub global application shell                                         */
+/* -------------------------------------------------------------------------- */
+
+.ch-app {
+  min-height: 100vh;
+  background: var(--ch-page);
+}
+
+.ch-app__content {
+  min-height: calc(100vh - 76px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* One shared navigation system used by every page                            */
+/* -------------------------------------------------------------------------- */
+
+.ch-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  border-bottom: 1px solid rgba(232, 232, 235, 0.96);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.ch-navbar__inner {
+  width: min(100% - 40px, 1280px);
+  height: 76px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.ch-navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.ch-navbar__brand img {
+  display: block;
+  width: auto;
+  height: 42px;
+  max-width: 190px;
+  object-fit: contain;
+}
+
+.ch-navbar__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ch-navbar__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 11px;
+  color: #5f636d;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition:
+    color 0.18s ease,
+    background 0.18s ease;
+}
+
+.ch-navbar__link:hover {
+  color: #111214;
+  background: #f7f7f8;
+}
+
+.ch-navbar__link.is-active {
+  color: #0b0b0c;
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.ch-navbar__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+
+.ch-navbar__profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 5px 14px 5px 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  color: #17181a;
+  text-decoration: none;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.02);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.ch-navbar__profile:hover {
+  border-color: #d7d9de;
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.06);
+  transform: translateY(-1px);
+}
+
+.ch-navbar__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eaf2ff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch-navbar__name {
+  max-width: 145px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ch-navbar__logout,
+.ch-navbar__login {
+  border: 0;
+  background: transparent;
+  color: #5f636d;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.ch-navbar__logout:hover,
+.ch-navbar__login:hover {
+  color: #0a0a0b;
+}
+
+.ch-navbar__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 17px;
+  border-radius: 12px;
+  background: #0a0a0b;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.ch-navbar__cta:hover {
+  background: #202124;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+.ch-navbar__menu {
+  display: none;
+}
+
+.ch-navbar__mobile {
+  display: none;
+}
+
+/* Make native controls feel like one design system without changing behavior. */
+
+.ch-app input,
+.ch-app textarea,
+.ch-app select {
+  accent-color: var(--ch-blue);
+}
+
+.ch-app input:focus,
+.ch-app textarea:focus,
+.ch-app select:focus {
+  outline: none;
+}
+
+@media (max-width: 900px) {
+  .ch-navbar__links,
+  .ch-navbar__actions {
+    display: none;
+  }
+
+  .ch-navbar__menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--ch-line);
+    border-radius: 12px;
+    background: #fff;
+    color: #17181a;
+    cursor: pointer;
+  }
+
+  .ch-navbar__mobile {
+    display: block;
+    border-top: 1px solid var(--ch-line);
+    padding: 10px 20px 18px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(16, 24, 40, 0.06);
+  }
+
+  .ch-navbar__mobile nav {
+    display: grid;
+    gap: 3px;
+  }
+
+  .ch-navbar__mobile-link {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 13px;
+    border-radius: 10px;
+    color: #50545c;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .ch-navbar__mobile-link:hover,
+  .ch-navbar__mobile-link.is-active {
+    color: #0a0a0b;
+    background: #f5f6f7;
+  }
+
+  .ch-navbar__mobile-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--ch-line);
+  }
+
+  .ch-navbar__mobile-actions > * {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 10px;
+    background: #f6f7f8;
+    color: #17181a;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .ch-navbar__mobile-actions .primary {
+    background: #0a0a0b;
+    color: #fff;
+  }
+
+  .ch-navbar__mobile-profile {
+    gap: 9px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ch-navbar__inner {
+    width: min(100% - 24px, 1280px);
+    height: 68px;
+  }
+
+  .ch-navbar__brand img {
+    height: 37px;
+    max-width: 155px;
+  }
+
+  .ch-app__content {
+    min-height: calc(100vh - 68px);
+  }
+}
 
 @keyframes float {
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-15px);
   }
@@ -24,6 +377,7 @@ body {
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -33,6 +387,7 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -43,6 +398,7 @@ body {
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 0.6;
   }

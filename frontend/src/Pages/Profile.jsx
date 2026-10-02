@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import careerHubLogo from "../assets/careerhub.png";
 const API_URL = (
   import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
@@ -84,28 +83,6 @@ export default function Profile() {
     .toUpperCase();
   return (
     <main className="min-h-screen bg-[#f8f9fb] text-neutral-950">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link to="/">
-            <img
-              src={careerHubLogo}
-              alt="CareerHub"
-              className="h-10 w-auto max-w-[210px] object-contain"
-            />
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/jobs" className="text-neutral-600 hover:text-black">
-              Jobs
-            </Link>
-            <button
-              onClick={logout}
-              className="font-medium hover:text-blue-600"
-            >
-              Logout
-            </button>
-          </nav>
-        </div>
-      </header>
       <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
         <p className="text-sm font-medium text-blue-700">
           YOUR CAREERHUB ACCOUNT

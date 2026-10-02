@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import careerHubLogo from "../assets/careerhub.png";
 import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 
 export default function SignUp() {
@@ -86,8 +85,15 @@ export default function SignUp() {
   };
 
   const handleGoogleSuccess = () => {
-    const requestedRedirect = new URLSearchParams(window.location.search).get("redirect");
-    const safeRedirect = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//") ? requestedRedirect : "/jobs";
+    const requestedRedirect = new URLSearchParams(window.location.search).get(
+      "redirect",
+    );
+    const safeRedirect =
+      requestedRedirect &&
+      requestedRedirect.startsWith("/") &&
+      !requestedRedirect.startsWith("//")
+        ? requestedRedirect
+        : "/jobs";
     navigate(safeRedirect, { replace: true });
   };
 
@@ -95,26 +101,6 @@ export default function SignUp() {
 
   return (
     <main className="min-h-screen bg-white text-neutral-950">
-      <header className="flex h-20 items-center justify-between border-b border-neutral-200 px-5 sm:px-10 lg:px-16">
-        <Link to="/" aria-label="CareerHub home">
-          <img
-            src={careerHubLogo}
-            alt="CareerHub"
-            className="h-11 w-auto max-w-[200px] object-contain"
-          />
-        </Link>
-
-        <div className="text-sm text-neutral-600">
-          Already a member?{" "}
-          <Link
-            to="/login"
-            className="font-semibold text-black underline underline-offset-4"
-          >
-            Sign in
-          </Link>
-        </div>
-      </header>
-
       <section className="grid min-h-[calc(100vh-80px)] lg:grid-cols-2">
         {/* LEFT PANEL */}
         <div className="relative hidden overflow-hidden bg-neutral-950 px-12 py-14 text-white lg:flex lg:flex-col lg:justify-between xl:px-20">
@@ -347,7 +333,11 @@ export default function SignUp() {
             </form>
 
             <div className="my-5">
-              <GoogleSignInButton remember={name == "SignIn.jsx" ? form.remember : true} onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              <GoogleSignInButton
+                remember={name == "SignIn.jsx" ? form.remember : true}
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+              />
             </div>
 
             <div className="my-7 flex items-center gap-4">

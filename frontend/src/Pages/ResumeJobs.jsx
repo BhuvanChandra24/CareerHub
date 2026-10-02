@@ -134,37 +134,6 @@ export default function ResumeJobs() {
   return (
     <div className="min-h-screen bg-[#f7f8fa] text-neutral-950">
       {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white">
-              <BriefcaseBusiness size={20} />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              Career<span className="text-neutral-500">Hub</span>.
-            </span>
-          </Link>
-
-          <nav className="hidden items-center gap-7 text-sm text-neutral-600 md:flex">
-            <Link to="/" className="hover:text-black">
-              Home
-            </Link>
-            <Link to="/jobs" className="hover:text-black">
-              All Jobs
-            </Link>
-            <Link to="/resume-optimizer" className="hover:text-black">
-              Resume ATS
-            </Link>
-          </nav>
-
-          <Link
-            to="/signup"
-            className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
-          >
-            Get Started
-          </Link>
-        </div>
-      </header>
 
       <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
         <Link
