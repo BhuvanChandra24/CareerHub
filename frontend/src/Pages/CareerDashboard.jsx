@@ -10,6 +10,7 @@ import {
   Building2,
   BookOpen,
   CreditCard,
+  FileText,
 } from "lucide-react";
 
 const API = (
@@ -69,6 +70,12 @@ const links = [
     BookOpen,
   ],
   [
+    "/resumes",
+    "Resume Manager",
+    "Store multiple resumes, versions and comparisons",
+    FileText,
+  ],
+  [
     "/ai-tools",
     "AI Career Toolkit",
     "Resume AI, job matching, cover letters and interviews",
@@ -125,7 +132,6 @@ export default function CareerDashboard() {
   })();
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -156,7 +162,7 @@ export default function CareerDashboard() {
             {error}
           </p>
         )}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
             ["Total applications", applications.length, BriefcaseBusiness],
             [
@@ -173,6 +179,14 @@ export default function CareerDashboard() {
               "Offers",
               applications.filter((x) => x.status === "Offer").length,
               Route,
+            ],
+            [
+              "Activity minutes",
+              workspace.reduce(
+                (sum, x) => sum + Number(x.durationMinutes || 0),
+                0,
+              ),
+              CalendarClock,
             ],
           ].map(([label, value, Icon]) => (
             <div key={label} className="rounded-2xl border bg-white p-5">
@@ -233,6 +247,48 @@ export default function CareerDashboard() {
             </Link>
           </section>
         </div>
+        <section className="mt-6 rounded-2xl border bg-white p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Activity summary</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Recent logged job-search time from your activity records.
+              </p>
+            </div>
+            <Link
+              to="/workspace/activities"
+              className="text-sm font-semibold text-blue-700"
+            >
+              Log activity →
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl bg-slate-50 p-4">
+              <p className="text-xs uppercase text-slate-500">Activities</p>
+              <p className="mt-1 text-2xl font-bold">{workspace.length}</p>
+            </div>
+            <div className="rounded-xl bg-slate-50 p-4">
+              <p className="text-xs uppercase text-slate-500">Total minutes</p>
+              <p className="mt-1 text-2xl font-bold">
+                {workspace.reduce(
+                  (sum, x) => sum + Number(x.durationMinutes || 0),
+                  0,
+                )}
+              </p>
+            </div>
+            <div className="rounded-xl bg-slate-50 p-4">
+              <p className="text-xs uppercase text-slate-500">Hours</p>
+              <p className="mt-1 text-2xl font-bold">
+                {(
+                  workspace.reduce(
+                    (sum, x) => sum + Number(x.durationMinutes || 0),
+                    0,
+                  ) / 60
+                ).toFixed(1)}
+              </p>
+            </div>
+          </div>
+        </section>
         <h2 className="mt-8 text-xl font-bold">Career workspace</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {links.map(([href, title, desc, Icon]) => (

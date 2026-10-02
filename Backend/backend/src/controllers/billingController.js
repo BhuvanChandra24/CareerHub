@@ -14,7 +14,7 @@ function verifyStripeSignature(rawBody, signatureHeader, secret) {
       return index < 0
         ? ["", ""]
         : [part.slice(0, index), part.slice(index + 1)];
-    })
+    }),
   );
 
   const timestamp = parts.t;
@@ -52,11 +52,7 @@ export async function stripeWebhook(req, res) {
 
   if (
     !Buffer.isBuffer(req.body) ||
-    !verifyStripeSignature(
-      req.body,
-      req.headers["stripe-signature"],
-      secret
-    )
+    !verifyStripeSignature(req.body, req.headers["stripe-signature"], secret)
   ) {
     return res.status(400).json({
       message: "Invalid Stripe webhook signature.",
@@ -84,7 +80,11 @@ export async function stripeWebhook(req, res) {
             stripeCustomerId: String(session.customer || ""),
             stripeSubscriptionId: String(session.subscription || ""),
             subscriptionStatus: "active",
-            subscriptionPlan: "pro",
+            subscriptionPlan: ["fresher", "experience"].includes(
+              session.metadata?.plan,
+            )
+              ? session.metadata.plan
+              : "pro",
           },
         });
       }
@@ -106,12 +106,16 @@ export async function stripeWebhook(req, res) {
           $set: {
             stripeSubscriptionId: String(subscription.id || ""),
             subscriptionStatus: active ? "active" : "free",
-            subscriptionPlan: active ? "pro" : "free",
+            subscriptionPlan: active
+              ? ["fresher", "experience"].includes(subscription.metadata?.plan)
+                ? subscription.metadata.plan
+                : "pro"
+              : "free",
             subscriptionCurrentPeriodEnd: subscription.current_period_end
               ? new Date(subscription.current_period_end * 1000)
               : null,
           },
-        }
+        },
       );
     }
 

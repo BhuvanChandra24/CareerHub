@@ -22,6 +22,17 @@ const schema = new mongoose.Schema(
     date: { type: Date, default: null },
     durationMinutes: { type: Number, min: 0, max: 100000, default: null },
     progress: { type: Number, min: 0, max: 100, default: 0 },
+    parentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WorkspaceItem",
+      default: null,
+      index: true,
+    },
+    sortOrder: { type: Number, default: 0 },
+    videoProgressSeconds: { type: Number, min: 0, default: 0 },
+    videoDurationSeconds: { type: Number, min: 0, default: 0 },
+    watchPercent: { type: Number, min: 0, max: 100, default: 0 },
+    completedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

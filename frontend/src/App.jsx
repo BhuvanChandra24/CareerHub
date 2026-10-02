@@ -23,6 +23,11 @@ import Billing from "./Pages/Billing.jsx";
 import InfoPage from "./Pages/InfoPage.jsx";
 import Companies from "./Pages/Companies.jsx";
 import JobsCRM from "./Pages/JobsCRM.jsx";
+import ForgotPassword from "./Pages/ForgotPassword.jsx";
+import ResetPassword from "./Pages/ResetPassword.jsx";
+import VerifyEmail from "./Pages/VerifyEmail.jsx";
+import ResumeManager from "./Pages/ResumeManager.jsx";
+import AdminContent from "./Pages/AdminContent.jsx";
 import SiteShell from "./components/SiteShell.jsx";
 
 const API_BASE = (
@@ -242,11 +247,26 @@ export default function App() {
             </SiteShell>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
-          path="/forgot-password"
+          path="/resumes"
           element={
             <SiteShell>
-              <InfoPage />
+              <RequireAuth>
+                <ResumeManager />
+              </RequireAuth>
+            </SiteShell>
+          }
+        />
+        <Route
+          path="/admin/content"
+          element={
+            <SiteShell>
+              <RequireAuth>
+                <AdminContent />
+              </RequireAuth>
             </SiteShell>
           }
         />

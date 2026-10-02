@@ -130,6 +130,30 @@ export default function CareerLearning() {
       setError(e.message);
     }
   };
+  const updateVideoProgress = async (item, percent) => {
+    try {
+      const value = Math.max(0, Math.min(100, Number(percent) || 0));
+      const data = await api(`/api/workspace/learning/${item._id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          videoDurationSeconds: 100,
+          videoProgressSeconds: value,
+          watchPercent: value,
+          status:
+            value >= 80
+              ? "Completed"
+              : value > 0
+                ? "In progress"
+                : "Not started",
+          completed: value >= 80,
+        }),
+      });
+      setItems((old) => old.map((x) => (x._id === item._id ? data.item : x)));
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
   const updateStatus = async (item, status) => {
     try {
       const data = await api(`/api/workspace/learning/${item._id}`, {
@@ -153,7 +177,6 @@ export default function CareerLearning() {
   const Icon = categories.find((x) => x.id === active)?.icon || BookOpen;
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-
       <section className="mx-auto max-w-7xl px-5 py-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
           Career learning
@@ -340,6 +363,27 @@ export default function CareerLearning() {
                         <Trash2 size={16} />
                       </button>
                     </div>
+                    {active === "video" && (
+                      <div className="mt-4 rounded-xl bg-slate-50 p-3">
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span>Watch progress</span>
+                          <span>{item.watchPercent || 0}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={item.watchPercent || 0}
+                          onChange={(e) =>
+                            updateVideoProgress(item, e.target.value)
+                          }
+                          className="mt-2 w-full"
+                        />
+                        <p className="mt-1 text-xs text-slate-500">
+                          80% or more automatically marks the video completed.
+                        </p>
+                      </div>
+                    )}
                     <div className="mt-3 flex flex-wrap gap-2">
                       {["Not started", "In progress", "Completed"].map(
                         (status) => (

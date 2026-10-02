@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Check, CreditCard, RefreshCw, ShieldCheck } from "lucide-react";
+
 const API = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
 const token = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token") || "";
 async function request(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
+  const r = await fetch(`${API}${path}`, {
     ...options,
     headers: {
       Authorization: `Bearer ${token()}`,
@@ -15,29 +16,77 @@ async function request(path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok)
-    throw new Error(data.message || `Request failed (${response.status})`);
-  return data;
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.message || "Request failed.");
+  return d;
 }
+
+const fallbackPlans = [
+  {
+    id: "free",
+    name: "Free",
+    description: "Core career workspace.",
+    limits: {
+      resumeAnalysis: 2,
+      coverLetters: 2,
+      mockInterviews: 2,
+      careerAssistant: 10,
+      branding: 2,
+      resumes: 2,
+    },
+  },
+  {
+    id: "fresher",
+    name: "Fresher",
+    description: "Higher AI limits for students and freshers.",
+    limits: {
+      resumeAnalysis: 10,
+      coverLetters: 10,
+      mockInterviews: 10,
+      careerAssistant: 50,
+      branding: 20,
+      resumes: 5,
+    },
+  },
+  {
+    id: "experience",
+    name: "Experience",
+    description: "Higher limits for experienced professionals.",
+    limits: {
+      resumeAnalysis: 30,
+      coverLetters: 30,
+      mockInterviews: 30,
+      careerAssistant: 150,
+      branding: 50,
+      resumes: 15,
+    },
+  },
+];
+
 export default function Billing() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location = useLocation(),
+    navigate = useNavigate();
   const [subscription, setSubscription] = useState({
     status: "free",
     plan: "free",
-    currentPeriodEnd: null,
+    usage: {},
+    limits: {},
   });
-  const [loading, setLoading] = useState(true);
-  const [checkout, setCheckout] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [plans, setPlans] = useState(fallbackPlans),
+    [loading, setLoading] = useState(true),
+    [checkout, setCheckout] = useState(""),
+    [error, setError] = useState(""),
+    [notice, setNotice] = useState("");
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await request("/api/billing/status");
-      setSubscription(data.subscription || { status: "free", plan: "free" });
+      const [s, p] = await Promise.all([
+        request("/api/billing/status"),
+        request("/api/billing/plans"),
+      ]);
+      setSubscription(s.subscription || {});
+      if (p.plans?.length) setPlans(p.plans);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -48,26 +97,24 @@ export default function Billing() {
     const status = new URLSearchParams(location.search).get("checkout");
     if (status === "success")
       setNotice(
-        "Checkout completed or returned successfully. Your subscription status will update after Stripe sends its webhook.",
+        "Checkout returned successfully. Stripe webhook will update the plan.",
       );
-    if (status === "cancelled")
-      setNotice("Checkout was cancelled. No subscription change was made.");
+    if (status === "cancelled") setNotice("Checkout cancelled.");
     load();
   }, [load, location.search]);
-  const startCheckout = async () => {
-    setCheckout(true);
+  const startCheckout = async (plan) => {
+    setCheckout(plan);
     setError("");
-    setNotice("");
     try {
-      const data = await request("/api/billing/checkout", {
+      const d = await request("/api/billing/checkout", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" }),
+        body: JSON.stringify({ plan }),
       });
-      if (!data.url) throw new Error("Stripe did not return a checkout URL.");
-      window.location.assign(data.url);
+      if (!d.url) throw new Error("Stripe did not return a checkout URL.");
+      window.location.assign(d.url);
     } catch (e) {
       setError(e.message);
-      setCheckout(false);
+      setCheckout("");
     }
   };
   return (
@@ -78,119 +125,83 @@ export default function Billing() {
         </p>
         <h1 className="mt-1 text-3xl font-bold">Plans & billing</h1>
         <p className="mt-2 max-w-2xl text-slate-600">
-          Manage your CareerHub plan. Checkout uses Stripe when your backend has
-          a Stripe secret key and a valid recurring price ID configured.
+          Choose a plan and use AI features within a clear monthly limit.
         </p>
         {notice && (
-          <div
-            role="status"
-            className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900"
-          >
+          <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
             {notice}
           </div>
         )}
         {error && (
-          <div
-            role="alert"
-            className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
-          >
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {error}
           </div>
         )}
-        <div className="mt-7 grid gap-5 md:grid-cols-2">
-          <article
-            className={`rounded-2xl border bg-white p-6 ${subscription.plan === "free" ? "border-blue-600 ring-1 ring-blue-600" : "border-slate-200"}`}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Free</h2>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
-                Starter
-              </span>
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              ₹0{" "}
-              <span className="text-sm font-normal text-slate-500">
-                / forever
-              </span>
-            </p>
-            <p className="mt-2 text-sm text-slate-600">
-              Start organizing your career search.
-            </p>
-            <ul className="mt-5 space-y-3 text-sm">
-              {[
-                "Job CRM and application tracking",
-                "Company and contact records",
-                "Career roadmap and learning library",
-                "CareerHub workspace",
-              ].map((x) => (
-                <li key={x} className="flex gap-2">
-                  <Check className="shrink-0 text-green-600" size={17} />
-                  {x}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="mt-7 w-full rounded-xl border px-4 py-3 font-semibold"
+        <div className="mt-7 grid gap-5 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <article
+              key={plan.id}
+              className={`rounded-2xl border bg-white p-6 ${subscription.plan === plan.id ? "border-blue-600 ring-1 ring-blue-600" : "border-slate-200"}`}
             >
-              {subscription.plan === "free"
-                ? "Current plan"
-                : "Back to dashboard"}
-            </button>
-          </article>
-          <article
-            className={`rounded-2xl border bg-white p-6 ${subscription.plan === "pro" ? "border-blue-600 ring-1 ring-blue-600" : "border-slate-200"}`}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">CareerHub Pro</h2>
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                Subscription
-              </span>
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              Stripe price{" "}
-              <span className="text-sm font-normal text-slate-500">
-                configured in billing
-              </span>
-            </p>
-            <p className="mt-2 text-sm text-slate-600">
-              A paid subscription managed securely through Stripe Checkout.
-            </p>
-            <ul className="mt-5 space-y-3 text-sm">
-              {[
-                "AI career assistant and interview practice",
-                "Resume analysis and job matching",
-                "AI cover letters and professional branding",
-                "Secure recurring billing through Stripe",
-              ].map((x) => (
-                <li key={x} className="flex gap-2">
-                  <Check className="shrink-0 text-green-600" size={17} />
-                  {x}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={startCheckout}
-              disabled={checkout || subscription.status === "active"}
-              className="mt-7 w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CreditCard size={17} className="mr-2 inline" />
-              {checkout
-                ? "Opening secure checkout…"
-                : subscription.status === "active"
-                  ? "Pro subscription active"
-                  : "Continue to Stripe Checkout"}
-            </button>
-          </article>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">{plan.name}</h2>
+                {subscription.plan === plan.id && (
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    Current
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-sm text-slate-600">{plan.description}</p>
+              <ul className="mt-5 space-y-2 text-sm">
+                {Object.entries(plan.limits || {}).map(([k, v]) => (
+                  <li key={k} className="flex gap-2">
+                    <Check size={16} className="mt-0.5 text-green-600" />
+                    {k
+                      .replace(/[A-Z]/g, (m) => ` ${m}`)
+                      .replace(/^./, (m) => m.toUpperCase())}
+                    : {v}/month
+                  </li>
+                ))}
+              </ul>
+              {plan.id === "free" ? (
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="mt-6 w-full rounded-xl border px-4 py-3 font-semibold"
+                >
+                  {subscription.plan === "free"
+                    ? "Current plan"
+                    : "Open dashboard"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => startCheckout(plan.id)}
+                  disabled={
+                    checkout === plan.id ||
+                    (subscription.plan === plan.id &&
+                      subscription.status === "active")
+                  }
+                  className="mt-6 w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+                >
+                  <CreditCard size={16} className="mr-2 inline" />
+                  {checkout === plan.id
+                    ? "Opening checkout…"
+                    : subscription.plan === plan.id &&
+                        subscription.status === "active"
+                      ? "Active"
+                      : "Continue to Stripe"}
+                </button>
+              )}
+            </article>
+          ))}
         </div>
         <section className="mt-6 rounded-2xl border bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <ShieldCheck className="text-blue-700" size={24} />
               <div>
-                <h2 className="font-semibold">Current subscription status</h2>
+                <h2 className="font-semibold">Current usage</h2>
                 <p className="text-sm text-slate-500">
-                  Status is refreshed from your signed-in account.
+                  Limits reset each calendar month.
                 </p>
               </div>
             </div>
@@ -199,45 +210,26 @@ export default function Billing() {
               className="rounded-lg border px-3 py-2 text-sm"
             >
               <RefreshCw size={14} className="mr-1 inline" />
-              Refresh status
+              Refresh
             </button>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Plan
-              </p>
-              <p className="mt-1 font-semibold">
-                {loading
-                  ? "Loading…"
-                  : (subscription.plan || "free").toUpperCase()}
-              </p>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Status
-              </p>
-              <p className="mt-1 font-semibold">
-                {loading ? "Loading…" : subscription.status}
-              </p>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">
-                Period ends
-              </p>
-              <p className="mt-1 font-semibold">
-                {subscription.currentPeriodEnd
-                  ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
-                  : "Not available"}
-              </p>
-            </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {Object.entries(subscription.limits || {}).map(([k, limit]) => (
+              <div key={k} className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">
+                  {k.replace(/[A-Z]/g, " $&")}
+                </p>
+                <p className="mt-1 font-semibold">
+                  {loading ? "…" : `${subscription.usage?.[k] || 0} / ${limit}`}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
         <p className="mt-5 text-xs leading-5 text-slate-500">
-          Before accepting live payments, configure Stripe test/live keys, a
-          recurring Pro Price ID, and the webhook endpoint{" "}
-          <code>/api/billing/webhook</code> in Stripe Dashboard. Test checkout
-          and webhook events before production.
+          For paid plans, configure STRIPE_PRICE_ID_FRESHER and
+          STRIPE_PRICE_ID_EXPERIENCE plus Stripe webhook settings on the
+          backend.
         </p>
       </section>
     </main>

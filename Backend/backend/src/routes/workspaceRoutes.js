@@ -20,6 +20,12 @@ const allowedFields = [
   "date",
   "durationMinutes",
   "progress",
+  "parentId",
+  "sortOrder",
+  "videoProgressSeconds",
+  "videoDurationSeconds",
+  "watchPercent",
+  "completedAt",
 ];
 function sectionParam(req, res, next) {
   if (!allowed.has(req.params.section))
@@ -78,9 +84,25 @@ router.patch("/:section/:id", sectionParam, async (req, res, next) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id))
       return res.status(400).json({ message: "Invalid item ID." });
+    const update = payload(req.body);
+    if (req.params.section === "learning") {
+      const duration = Number(update.videoDurationSeconds || 0);
+      const position = Number(update.videoProgressSeconds || 0);
+      if (duration > 0) {
+        update.watchPercent = Math.min(
+          100,
+          Math.round((position / duration) * 100),
+        );
+        if (update.watchPercent >= 80) {
+          update.completed = true;
+          update.status = "Completed";
+          update.completedAt = update.completedAt || new Date();
+        }
+      }
+    }
     const item = await WorkspaceItem.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id, section: req.params.section },
-      { $set: payload(req.body) },
+      { $set: update },
       { new: true, runValidators: true },
     );
     if (!item) return res.status(404).json({ message: "Item not found." });

@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
@@ -20,6 +19,8 @@ import trackerRoutes from "./routes/trackerRoutes.js";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
+import resumeLibraryRoutes from "./routes/resumeLibraryRoutes.js";
+import contentRoutes from "./routes/contentRoutes.js";
 
 import { stripeWebhook } from "./controllers/billingController.js";
 
@@ -111,9 +112,7 @@ const applicationUpload = multer({
 
       cb(
         null,
-        `${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2, 9)}-${safe}`,
+        `${Date.now()}-${Math.random().toString(36).slice(2, 9)}-${safe}`,
       );
     },
   }),
@@ -151,14 +150,11 @@ app.get("/api/health/jobs", (_req, res) => {
     service: "CareerHub Job Providers",
 
     configured: Boolean(
-      (config.adzunaAppId && config.adzunaAppKey) ||
-      config.joobleApiKey,
+      (config.adzunaAppId && config.adzunaAppKey) || config.joobleApiKey,
     ),
 
     providers: {
-      adzuna: Boolean(
-        config.adzunaAppId && config.adzunaAppKey,
-      ),
+      adzuna: Boolean(config.adzunaAppId && config.adzunaAppKey),
 
       jooble: Boolean(config.joobleApiKey),
     },
@@ -171,12 +167,14 @@ app.get("/api/health/jobs", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/resumes", resumeLibraryRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/tracker", trackerRoutes);
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/content", contentRoutes);
 
 // Centralized error handling.
 app.use((err, _req, res, _next) => {
@@ -184,9 +182,7 @@ app.use((err, _req, res, _next) => {
     const tooLarge = err.code === "LIMIT_FILE_SIZE";
 
     return res.status(tooLarge ? 413 : 400).json({
-      message: tooLarge
-        ? "File must be 5 MB or smaller."
-        : err.message,
+      message: tooLarge ? "File must be 5 MB or smaller." : err.message,
     });
   }
 
@@ -196,9 +192,7 @@ app.use((err, _req, res, _next) => {
 
   res.status(status).json({
     message:
-      status === 500
-        ? "An unexpected server error occurred."
-        : err.message,
+      status === 500 ? "An unexpected server error occurred." : err.message,
   });
 });
 
@@ -209,15 +203,10 @@ try {
   console.log("MongoDB connected");
 
   app.listen(config.port, () => {
-    console.log(
-      `CareerHub API listening on port ${config.port}`,
-    );
+    console.log(`CareerHub API listening on port ${config.port}`);
   });
 } catch (error) {
-  console.error(
-    "Unable to connect to MongoDB:",
-    error.message,
-  );
+  console.error("Unable to connect to MongoDB:", error.message);
 
   process.exit(1);
 }
