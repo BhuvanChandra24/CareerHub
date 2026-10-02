@@ -6,7 +6,6 @@ export const PLAN_LIMITS = {
     coverLetters: 2,
     mockInterviews: 2,
     careerAssistant: 10,
-    branding: 2,
     resumes: 2,
   },
   fresher: {
@@ -14,7 +13,6 @@ export const PLAN_LIMITS = {
     coverLetters: 10,
     mockInterviews: 10,
     careerAssistant: 50,
-    branding: 20,
     resumes: 5,
   },
   experience: {
@@ -22,7 +20,6 @@ export const PLAN_LIMITS = {
     coverLetters: 30,
     mockInterviews: 30,
     careerAssistant: 150,
-    branding: 50,
     resumes: 15,
   },
   pro: {
@@ -30,7 +27,6 @@ export const PLAN_LIMITS = {
     coverLetters: 100,
     mockInterviews: 100,
     careerAssistant: 500,
-    branding: 200,
     resumes: 30,
   },
 };

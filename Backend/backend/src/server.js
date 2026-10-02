@@ -21,6 +21,7 @@ import billingRoutes from "./routes/billingRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import resumeLibraryRoutes from "./routes/resumeLibraryRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
+import usageRoutes from "./routes/usageRoutes.js";
 
 import { stripeWebhook } from "./controllers/billingController.js";
 
@@ -175,6 +176,7 @@ app.use("/api/workspace", workspaceRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/content", contentRoutes);
+app.use("/api/usage", usageRoutes);
 
 // Centralized error handling.
 app.use((err, _req, res, _next) => {

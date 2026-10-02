@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const API = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
 const token = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token") || "";
@@ -91,18 +91,26 @@ const links = [
 export default function CareerDashboard() {
   const [applications, setApplications] = useState([]);
   const [workspace, setWorkspace] = useState([]);
+  const [usage, setUsage] = useState({
+    events: [],
+    infoUsage: 0,
+    infoLimit: 5,
+    plan: "free",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const load = async () => {
     setLoading(true);
     setError("");
     try {
-      const [a, w] = await Promise.all([
+      const [a, w, u] = await Promise.all([
         get("/api/tracker/applications"),
         get("/api/workspace/activities"),
+        get("/api/usage/summary"),
       ]);
       setApplications(a.applications || []);
       setWorkspace(w.items || []);
+      setUsage(u || { events: [] });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -289,6 +297,53 @@ export default function CareerDashboard() {
             </div>
           </div>
         </section>
+        <section className="mt-6 rounded-2xl border bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Your website usage</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Recent pages and tools used, with the time spent on each page.
+              </p>
+            </div>
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+              {usage.plan} plan
+            </span>
+          </div>
+          {usage.plan === "free" && (
+            <p className="mt-4 text-sm text-slate-600">
+              Information access this month:{" "}
+              <strong>{usage.infoUsage || 0} / 5</strong>. Subscribe to continue
+              after the free allowance.
+            </p>
+          )}
+          <div className="mt-4 divide-y">
+            {(usage.events || []).slice(0, 10).map((e, i) => (
+              <div
+                key={e._id || i}
+                className="flex flex-wrap items-center justify-between gap-3 py-3"
+              >
+                <div>
+                  <p className="font-medium">
+                    {String(e.feature || "Page").replace(/[-_]/g, " ")}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {e.path} ·{" "}
+                    {new Date(e.createdAt || Date.now()).toLocaleString()}
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-slate-600">
+                  {Math.max(1, Math.round(Number(e.durationSeconds || 0) / 60))}{" "}
+                  min
+                </span>
+              </div>
+            ))}
+            {!(usage.events || []).length && (
+              <p className="py-4 text-sm text-slate-500">
+                Usage history will appear here as you use CareerHub.
+              </p>
+            )}
+          </div>
+        </section>
         <h2 className="mt-8 text-xl font-bold">Career workspace</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {links.map(([href, title, desc, Icon]) => (
@@ -305,6 +360,21 @@ export default function CareerDashboard() {
               </span>
             </Link>
           ))}
+          {user.role === "admin" && (
+            <Link
+              to="/admin/content"
+              className="group rounded-2xl border border-blue-200 bg-blue-50 p-5 transition hover:border-blue-400"
+            >
+              <BookOpen className="text-blue-700" size={22} />
+              <h3 className="mt-3 font-semibold">Admin Career Learning</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Upload videos, webinars, blogs and courses for users.
+              </p>
+              <span className="mt-4 inline-block text-sm font-semibold text-blue-700">
+                Manage content →
+              </span>
+            </Link>
+          )}
         </div>
       </section>
     </main>

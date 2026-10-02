@@ -31,7 +31,6 @@ const fallbackPlans = [
       coverLetters: 2,
       mockInterviews: 2,
       careerAssistant: 10,
-      branding: 2,
       resumes: 2,
     },
   },
@@ -44,7 +43,6 @@ const fallbackPlans = [
       coverLetters: 10,
       mockInterviews: 10,
       careerAssistant: 50,
-      branding: 20,
       resumes: 5,
     },
   },
@@ -57,7 +55,6 @@ const fallbackPlans = [
       coverLetters: 30,
       mockInterviews: 30,
       careerAssistant: 150,
-      branding: 50,
       resumes: 15,
     },
   },
@@ -212,6 +209,16 @@ export default function Billing() {
               <RefreshCw size={14} className="mr-1 inline" />
               Refresh
             </button>
+          </div>
+          <div className="mt-4 rounded-xl bg-slate-50 p-4">
+            <p className="text-xs uppercase tracking-wide text-slate-500">
+              Information access
+            </p>
+            <p className="mt-1 font-semibold">
+              {subscription.plan === "free"
+                ? `${subscription.infoUsage || 0} / 5 this month`
+                : "Unlimited under subscription"}
+            </p>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {Object.entries(subscription.limits || {}).map(([k, limit]) => (

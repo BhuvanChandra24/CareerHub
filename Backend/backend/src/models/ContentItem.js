@@ -17,6 +17,7 @@ const schema = new mongoose.Schema(
     },
     body: { type: String, default: "", maxlength: 100000 },
     summary: { type: String, default: "", maxlength: 1000 },
+    url: { type: String, default: "", maxlength: 2000 },
     published: { type: Boolean, default: false, index: true },
     plan: {
       type: String,

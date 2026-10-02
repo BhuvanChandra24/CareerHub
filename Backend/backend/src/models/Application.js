@@ -22,9 +22,19 @@ const applicationSchema = new mongoose.Schema(
     resumeOriginalName: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["submitted", "reviewing", "closed"],
+      enum: [
+        "submitted",
+        "reviewing",
+        "interview",
+        "offer",
+        "rejected",
+        "closed",
+      ],
       default: "submitted",
     },
+    statusHistory: [
+      { status: String, date: { type: Date, default: Date.now }, note: String },
+    ],
   },
   { timestamps: true },
 );

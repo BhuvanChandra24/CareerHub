@@ -58,14 +58,6 @@ const tools = [
       "Generate a job-specific draft from the facts you provide. CareerHub will not invent qualifications or achievements.",
   },
   {
-    id: "linkedin",
-    icon: BriefcaseBusiness,
-    tag: "PERSONAL BRAND",
-    title: "LinkedIn AI",
-    description:
-      "Create a truthful headline, About section, profile summary or connection message from your real experience.",
-  },
-  {
     id: "interview",
     icon: MessageSquare,
     tag: "PRACTICE",
@@ -123,11 +115,6 @@ export default function AIToolkit() {
     resumeText: "",
     jobDescription: "",
     tone: "Professional",
-  });
-
-  const [brand, setBrand] = useState({
-    type: "LinkedIn About section",
-    details: "",
   });
 
   const [interview, setInterview] = useState({
@@ -280,33 +267,6 @@ export default function AIToolkit() {
       });
 
       setResult(data.result || "No cover letter returned.");
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const branding = async (e) => {
-    e.preventDefault();
-
-    setBusy(true);
-    setError("");
-    setResult("");
-
-    try {
-      const data = await api("/api/ai/branding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tool: brand.type,
-          details: brand.details,
-        }),
-      });
-
-      setResult(data.result || "No content returned.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -646,54 +606,6 @@ export default function AIToolkit() {
                 {busy
                   ? "Generating…"
                   : "Generate cover letter"}
-              </button>
-            </form>
-          )}
-
-          {active === "linkedin" && (
-            <form onSubmit={branding} className="ai-form">
-              <label>
-                What should AI create?
-
-                <select
-                  value={brand.type}
-                  onChange={(e) =>
-                    setBrand({
-                      ...brand,
-                      type: e.target.value,
-                    })
-                  }
-                >
-                  <option>LinkedIn headline</option>
-                  <option>LinkedIn About section</option>
-                  <option>LinkedIn profile summary</option>
-                  <option>
-                    LinkedIn connection message
-                  </option>
-                </select>
-              </label>
-
-              <label>
-                Your real skills, projects and experience
-
-                <textarea
-                  required
-                  rows="9"
-                  value={brand.details}
-                  onChange={(e) =>
-                    setBrand({
-                      ...brand,
-                      details: e.target.value,
-                    })
-                  }
-                  placeholder="Add facts only. CareerHub will not invent achievements."
-                />
-              </label>
-
-              <button disabled={busy}>
-                {busy
-                  ? "Writing…"
-                  : "Generate LinkedIn content"}
               </button>
             </form>
           )}

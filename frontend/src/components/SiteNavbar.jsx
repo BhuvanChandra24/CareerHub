@@ -5,7 +5,8 @@ import careerHubLogo from "../assets/careerhub.png";
 
 const getStoredUser = () => {
   try {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
     return token && raw ? JSON.parse(raw) : null;
   } catch {
@@ -15,9 +16,10 @@ const getStoredUser = () => {
 
 const navItems = [
   { label: "Home", to: "/", exact: true },
-  { label: "Jobs", to: "/jobs-hub" },
+  { label: "Jobs", to: "/jobs" },
   { label: "AI Tools", to: "/ai-tools", protected: true },
   { label: "Career Learning", to: "/learning", protected: true },
+  { label: "Dashboard", to: "/dashboard", protected: true },
 ];
 
 export default function SiteNavbar() {
@@ -61,7 +63,8 @@ export default function SiteNavbar() {
 
   const openProtected = (event, item) => {
     if (!item.protected) return;
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       event.preventDefault();
       navigate(`/login?redirect=${encodeURIComponent(item.to)}`);
@@ -98,13 +101,19 @@ export default function SiteNavbar() {
                 <span className="ch-navbar__avatar">{initials}</span>
                 <span className="ch-navbar__name">{displayName}</span>
               </Link>
-              <button type="button" className="ch-navbar__logout" onClick={logout}>
+              <button
+                type="button"
+                className="ch-navbar__logout"
+                onClick={logout}
+              >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="ch-navbar__login">Login</Link>
+              <Link to="/login" className="ch-navbar__login">
+                Login
+              </Link>
               <Link to="/signup" className="ch-navbar__cta">
                 Get Started <ArrowUpRight size={15} />
               </Link>
@@ -115,7 +124,9 @@ export default function SiteNavbar() {
         <button
           type="button"
           className="ch-navbar__menu"
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={
+            menuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((value) => !value)}
         >
@@ -146,16 +157,30 @@ export default function SiteNavbar() {
           <div className="ch-navbar__mobile-actions">
             {user ? (
               <>
-                <Link to="/profile" onClick={() => setMenuOpen(false)} className="ch-navbar__mobile-profile">
+                <Link
+                  to="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="ch-navbar__mobile-profile"
+                >
                   <span className="ch-navbar__avatar">{initials}</span>
                   {displayName}
                 </Link>
-                <button type="button" onClick={logout}>Logout</button>
+                <button type="button" onClick={logout}>
+                  Logout
+                </button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
-                <Link to="/signup" onClick={() => setMenuOpen(false)} className="primary">Get Started</Link>
+                <Link to="/login" onClick={() => setMenuOpen(false)}>
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="primary"
+                >
+                  Get Started
+                </Link>
               </>
             )}
           </div>

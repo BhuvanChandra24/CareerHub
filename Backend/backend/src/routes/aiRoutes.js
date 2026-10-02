@@ -5,6 +5,7 @@ import { extractResumeText } from "../services/resumeService.js";
 import { requireAuth } from "../middleware/auth.js";
 import { requireText } from "../utils.js";
 import { planLimit } from "../middleware/planLimits.js";
+import { infoUsageLimit } from "../middleware/infoUsageLimit.js";
 
 const router = Router();
 router.use(requireAuth);
@@ -27,6 +28,7 @@ const upload = multer({
 
 router.post(
   "/career-assistant",
+  infoUsageLimit,
   planLimit("careerAssistant"),
   async (req, res, next) => {
     try {
@@ -47,8 +49,9 @@ router.post(
 );
 router.post(
   "/resume/analyze",
-  planLimit("resumeAnalysis"),
   upload.single("resume"),
+  infoUsageLimit,
+  planLimit("resumeAnalysis"),
   async (req, res, next) => {
     try {
       const resumeText = await extractResumeText(req.file);
@@ -77,6 +80,7 @@ router.post(
 );
 router.post(
   "/mock-interview/questions",
+  infoUsageLimit,
   planLimit("mockInterviews"),
   async (req, res, next) => {
     try {
@@ -116,6 +120,7 @@ router.post(
 );
 router.post(
   "/mock-interview/evaluate",
+  infoUsageLimit,
   planLimit("mockInterviews"),
   async (req, res, next) => {
     try {
@@ -139,6 +144,7 @@ router.post(
 router.post(
   "/cover-letter",
   requireAuth,
+  infoUsageLimit,
   planLimit("coverLetters"),
   async (req, res, next) => {
     try {
@@ -162,27 +168,6 @@ router.post(
         prompt: `Create a concise cover letter.\nName: ${fullName || "Candidate"}\nCompany: ${company}\nRole: ${jobTitle}\nTone: ${tone}\nResume facts:\n${resumeText || "No resume details supplied; avoid claiming specific experience."}\nJob description:\n${jobDescription}`,
         temperature: 0.45,
         maxTokens: 1300,
-      });
-      res.json({ result });
-    } catch (e) {
-      next(e);
-    }
-  },
-);
-router.post(
-  "/branding",
-  requireAuth,
-  planLimit("branding"),
-  async (req, res, next) => {
-    try {
-      const tool = requireText(req.body?.tool, "Tool", 80),
-        details = requireText(req.body?.details, "Details", 6000);
-      const result = await generateAIText({
-        system:
-          "You are a professional career-branding assistant. Produce truthful, polished text based only on user-provided facts; do not invent credentials or achievements.",
-        prompt: `Create this career-branding item: ${tool}\nUser details:\n${details}\nReturn only the requested content.`,
-        temperature: 0.55,
-        maxTokens: 1000,
       });
       res.json({ result });
     } catch (e) {

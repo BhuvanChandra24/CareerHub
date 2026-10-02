@@ -35,7 +35,7 @@ router.get("/plans", (_req, res) => {
 router.get("/status", async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "subscriptionStatus subscriptionPlan subscriptionCurrentPeriodEnd usage usagePeriod",
+      "subscriptionStatus subscriptionPlan subscriptionCurrentPeriodEnd usage usagePeriod infoUsage infoUsagePeriod",
     );
     if (!user) return res.status(404).json({ message: "User not found." });
     res.json({
@@ -45,6 +45,8 @@ router.get("/status", async (req, res, next) => {
         currentPeriodEnd: user.subscriptionCurrentPeriodEnd || null,
         usage: user.usage || {},
         usagePeriod: user.usagePeriod || null,
+        infoUsage: user.infoUsage || 0,
+        infoUsagePeriod: user.infoUsagePeriod || null,
         limits: PLAN_LIMITS[user.subscriptionPlan] || PLAN_LIMITS.free,
       },
     });

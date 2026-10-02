@@ -22,7 +22,6 @@ import CareerLearning from "./Pages/CareerLearning.jsx";
 import Billing from "./Pages/Billing.jsx";
 import InfoPage from "./Pages/InfoPage.jsx";
 import Companies from "./Pages/Companies.jsx";
-import JobsCRM from "./Pages/JobsCRM.jsx";
 import ForgotPassword from "./Pages/ForgotPassword.jsx";
 import ResetPassword from "./Pages/ResetPassword.jsx";
 import VerifyEmail from "./Pages/VerifyEmail.jsx";
@@ -129,14 +128,7 @@ export default function App() {
             </SiteShell>
           }
         />
-        <Route
-          path="/jobs-hub"
-          element={
-            <SiteShell>
-              <JobsCRM />
-            </SiteShell>
-          }
-        />
+        <Route path="/jobs-hub" element={<Navigate to="/jobs" replace />} />
         <Route
           path="/jobs"
           element={

@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   BookOpen,
   Video,
   CalendarDays,
   FileText,
   GraduationCap,
-  Plus,
-  Trash2,
-  ExternalLink,
+  Lock,
+  PlayCircle,
   RefreshCw,
+  CheckCircle2,
+  ExternalLink,
+  Clock3,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com"
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
 const token = () =>
   localStorage.getItem("token") || sessionStorage.getItem("token") || "";
@@ -21,30 +23,30 @@ const categories = [
   {
     id: "video",
     label: "Videos",
-    icon: Video,
     hint: "Tutorials, recorded lessons and technical walkthroughs",
+    icon: Video,
   },
   {
     id: "webinar",
     label: "Webinars",
-    icon: CalendarDays,
     hint: "Live sessions, workshops and event recordings",
+    icon: CalendarDays,
   },
   {
-    id: "blog",
-    label: "Blog",
-    icon: FileText,
+    id: "article",
+    label: "Blogs",
     hint: "Articles, guides and career insights",
+    icon: FileText,
   },
   {
     id: "course",
     label: "Courses",
-    icon: GraduationCap,
     hint: "Structured courses and learning paths",
+    icon: GraduationCap,
   },
 ];
 async function api(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
+  const r = await fetch(`${API}${path}`, {
     ...options,
     headers: {
       Authorization: `Bearer ${token()}`,
@@ -52,382 +54,326 @@ async function api(path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok)
-    throw new Error(data.message || `Request failed (${response.status})`);
-  return data;
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const e = new Error(d.message || `Request failed (${r.status})`);
+    e.code = d.code;
+    throw e;
+  }
+  return d;
 }
-
+function YouTubeEmbed({ url, title }) {
+  try {
+    const u = new URL(url);
+    let id = u.searchParams.get("v");
+    if (!id && u.hostname.includes("youtu.be")) id = u.pathname.slice(1);
+    if (!id) return null;
+    return (
+      <div className="aspect-video overflow-hidden rounded-xl bg-black">
+        <iframe
+          className="h-full w-full"
+          src={`https://www.youtube.com/embed/${id}`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  } catch {
+    return null;
+  }
+}
 export default function CareerLearning() {
+  const navigate = useNavigate();
   const [active, setActive] = useState("video");
   const [items, setItems] = useState([]);
-  const [form, setForm] = useState({
-    title: "",
-    url: "",
-    description: "",
-    status: "Not started",
-  });
-  const [busy, setBusy] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [plan, setPlan] = useState("free");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [progress, setProgress] = useState(null);
   const load = useCallback(async () => {
-    setBusy(true);
+    setLoading(true);
     setError("");
     try {
-      const data = await api("/api/workspace/learning");
-      setItems(data.items || []);
+      const d = await api("/api/content");
+      setItems(d.items || []);
+      setPlan(d.plan || "free");
     } catch (e) {
       setError(e.message);
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   }, []);
   useEffect(() => {
     load();
   }, [load]);
   const visible = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          (item.data?.type || item.data?.category || "video").toLowerCase() ===
-          active,
-      ),
+    () => items.filter((x) => (x.type || "article") === active),
     [items, active],
   );
-  const submit = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
+  const open = async (item) => {
     setNotice("");
+    setError("");
+    if (item.locked) {
+      navigate("/billing");
+      return;
+    }
     try {
-      const data = await api("/api/workspace/learning", {
-        method: "POST",
-        body: JSON.stringify({
-          title: form.title.trim(),
-          description: form.description.trim(),
-          url: form.url.trim(),
-          category: active,
-          type: active,
-          status: form.status,
-        }),
-      });
-      setItems((old) => [data.item, ...old]);
-      setForm({ title: "", url: "", description: "", status: "Not started" });
-      setNotice("Learning resource saved to your account.");
+      const d = await api(`/api/content/${item._id}`);
+      setSelected(d.item);
+      setProgress(
+        d.progress || { percent: 0, positionSeconds: 0, completed: false },
+      );
     } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
+      if (e.code === "SUBSCRIPTION_REQUIRED") {
+        setNotice("This learning resource requires a subscription.");
+        navigate("/billing");
+      } else setError(e.message);
     }
   };
-  const remove = async (id) => {
-    if (!window.confirm("Remove this learning resource?")) return;
+  const saveProgress = async (percent, positionSeconds = 0) => {
+    if (!selected) return;
     try {
-      await api(`/api/workspace/learning/${id}`, { method: "DELETE" });
-      setItems((old) => old.filter((item) => item._id !== id));
-    } catch (e) {
-      setError(e.message);
-    }
-  };
-  const updateVideoProgress = async (item, percent) => {
-    try {
-      const value = Math.max(0, Math.min(100, Number(percent) || 0));
-      const data = await api(`/api/workspace/learning/${item._id}`, {
+      const d = await api(`/api/content/${selected._id}/progress`, {
         method: "PATCH",
         body: JSON.stringify({
-          videoDurationSeconds: 100,
-          videoProgressSeconds: value,
-          watchPercent: value,
-          status:
-            value >= 80
-              ? "Completed"
-              : value > 0
-                ? "In progress"
-                : "Not started",
-          completed: value >= 80,
+          percent,
+          positionSeconds,
+          completed: percent >= 90,
         }),
       });
-      setItems((old) => old.map((x) => (x._id === item._id ? data.item : x)));
+      setProgress(d.progress);
     } catch (e) {
       setError(e.message);
     }
   };
-
-  const updateStatus = async (item, status) => {
-    try {
-      const data = await api(`/api/workspace/learning/${item._id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status,
-          completed: status === "Completed",
-          data: {
-            ...(item.data || {}),
-            type: active,
-            category: active,
-            url: item.data?.url || "",
-          },
-        }),
-      });
-      setItems((old) => old.map((x) => (x._id === item._id ? data.item : x)));
-    } catch (e) {
-      setError(e.message);
-    }
-  };
-  const Icon = categories.find((x) => x.id === active)?.icon || BookOpen;
+  const title = categories.find((x) => x.id === active)?.label || "Learning";
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <section className="mx-auto max-w-7xl px-5 py-8">
-        <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
-          Career learning
-        </p>
-        <h1 className="mt-1 text-3xl font-bold">Build your learning library</h1>
-        <p className="mt-2 max-w-3xl text-slate-600">
-          Save videos, webinars, blog articles and courses you want to use.
-          Resources are saved to your account; add links from providers you
-          trust.
-        </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category) => {
-            const CategoryIcon = category.icon;
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+              Career learning
+            </p>
+            <h1 className="mt-1 text-3xl font-bold">Learn from CareerHub</h1>
+            <p className="mt-2 max-w-3xl text-slate-600">
+              Admin-published videos, webinars, blogs and courses. Your progress
+              is saved to your account.
+            </p>
+          </div>
+          <button
+            onClick={load}
+            className="rounded-xl border bg-white px-4 py-2 text-sm"
+          >
+            <RefreshCw size={15} className="mr-2 inline" />
+            Refresh
+          </button>
+        </div>
+        {plan !== "free" && (
+          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+            {plan} subscription active — subscriber learning is unlocked.
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        {notice && (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            {notice}
+          </div>
+        )}
+        <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {categories.map((c) => {
+            const I = c.icon;
+            const count = items.filter(
+              (x) => (x.type || "article") === c.id,
+            ).length;
             return (
               <button
-                key={category.id}
+                key={c.id}
                 onClick={() => {
-                  setActive(category.id);
-                  setError("");
-                  setNotice("");
+                  setActive(c.id);
+                  setSelected(null);
                 }}
-                className={`rounded-2xl border p-4 text-left transition ${active === category.id ? "border-blue-700 bg-blue-50 ring-1 ring-blue-700" : "border-slate-200 bg-white hover:border-blue-300"}`}
+                className={`rounded-2xl border p-5 text-left ${active === c.id ? "border-blue-700 bg-blue-50 ring-1 ring-blue-700" : "border-slate-200 bg-white hover:border-blue-300"}`}
               >
-                <CategoryIcon className="text-blue-700" size={22} />
-                <h2 className="mt-3 font-semibold">{category.label}</h2>
-                <p className="mt-1 text-sm text-slate-600">{category.hint}</p>
+                <I className="text-blue-700" size={24} />
+                <h2 className="mt-3 font-semibold">{c.label}</h2>
+                <p className="mt-1 text-sm text-slate-600">{c.hint}</p>
                 <p className="mt-3 text-xs font-semibold text-slate-500">
-                  {
-                    items.filter(
-                      (item) =>
-                        (
-                          item.data?.type ||
-                          item.data?.category ||
-                          "video"
-                        ).toLowerCase() === category.id,
-                    ).length
-                  }{" "}
-                  saved
+                  {count} published
                 </p>
               </button>
             );
           })}
         </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <form
-            onSubmit={submit}
-            className="h-fit rounded-2xl border bg-white p-5"
-          >
-            <div className="flex items-center gap-3">
-              <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
-                <Icon size={22} />
-              </span>
-              <div>
-                <h2 className="font-semibold">
-                  Add{" "}
-                  {categories.find((x) => x.id === active)?.label.toLowerCase()}
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Save a resource to revisit later.
-                </p>
-              </div>
-            </div>
-            <label className="mt-5 block text-sm font-medium">
-              Title
-              <input
-                required
-                maxLength={200}
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="mt-1 w-full rounded-lg border px-3 py-2.5 font-normal"
-                placeholder="Resource title"
-              />
-            </label>
-            <label className="mt-3 block text-sm font-medium">
-              Resource URL
-              <input
-                type="url"
-                value={form.url}
-                onChange={(e) => setForm({ ...form, url: e.target.value })}
-                className="mt-1 w-full rounded-lg border px-3 py-2.5 font-normal"
-                placeholder="https://..."
-              />
-            </label>
-            <label className="mt-3 block text-sm font-medium">
-              Notes
-              <textarea
-                rows="3"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                className="mt-1 w-full rounded-lg border px-3 py-2.5 font-normal"
-                placeholder="What do you want to learn?"
-              />
-            </label>
-            <label className="mt-3 block text-sm font-medium">
-              Progress
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="mt-1 w-full rounded-lg border px-3 py-2.5 font-normal"
-              >
-                <option>Not started</option>
-                <option>In progress</option>
-                <option>Completed</option>
-              </select>
-            </label>
-            {error && (
-              <p
-                role="alert"
-                className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700"
-              >
-                {error}
+        <section className="mt-6">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-bold">{title}</h2>
+              <p className="text-sm text-slate-500">
+                {visible.length
+                  ? `${visible.length} resource${visible.length === 1 ? "" : "s"}`
+                  : "No resources yet"}
               </p>
-            )}
-            {notice && (
-              <p
-                role="status"
-                className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700"
-              >
-                {notice}
-              </p>
-            )}
-            <button
-              disabled={saving}
-              className="mt-4 w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
-            >
-              <Plus size={16} className="mr-2 inline" />
-              {saving ? "Saving…" : "Save resource"}
-            </button>
-          </form>
-          <section className="overflow-hidden rounded-2xl border bg-white">
-            <div className="flex items-center justify-between border-b p-4">
-              <div>
-                <h2 className="font-semibold">
-                  Your{" "}
-                  {categories.find((x) => x.id === active)?.label.toLowerCase()}
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Saved resources only; no placeholder listings.
-                </p>
-              </div>
-              <button
-                onClick={load}
-                className="rounded-lg border px-3 py-2 text-sm"
-              >
-                <RefreshCw size={14} className="mr-1 inline" />
-                Refresh
-              </button>
             </div>
-            {busy && !items.length ? (
-              <p className="p-6 text-slate-500">Loading resources…</p>
-            ) : visible.length ? (
-              <div className="divide-y">
-                {visible.map((item) => (
-                  <article key={item._id} className="p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold">{item.title}</h3>
-                        {item.description && (
-                          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">
-                            {item.description}
-                          </p>
-                        )}
-                        <p className="mt-2 text-xs text-slate-500">
-                          Progress: {item.status || "Not started"}
-                        </p>
-                        {item.data?.url && (
-                          <a
-                            href={item.data.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-blue-700"
-                          >
-                            Open resource <ExternalLink size={14} />
-                          </a>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => remove(item._id)}
-                        aria-label={`Delete ${item.title}`}
-                        className="rounded-lg border p-2 text-red-600"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                    {active === "video" && (
-                      <div className="mt-4 rounded-xl bg-slate-50 p-3">
-                        <div className="flex items-center justify-between text-xs font-semibold">
-                          <span>Watch progress</span>
-                          <span>{item.watchPercent || 0}%</span>
+          </div>
+          {loading ? (
+            <div className="rounded-2xl border bg-white p-8 text-slate-500">
+              Loading learning library…
+            </div>
+          ) : visible.length ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {visible.map((item) => {
+                const p = item.progress || {};
+                return (
+                  <article
+                    key={item._id}
+                    className="overflow-hidden rounded-2xl border bg-white shadow-sm"
+                  >
+                    <div className="h-40 bg-slate-100">
+                      {item.type === "video" && item.url ? (
+                        <YouTubeEmbed url={item.url} title={item.title} />
+                      ) : (
+                        <div className="grid h-full place-items-center">
+                          {item.locked ? (
+                            <Lock className="text-slate-400" size={36} />
+                          ) : (
+                            <BookOpen className="text-blue-300" size={42} />
+                          )}
                         </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={item.watchPercent || 0}
-                          onChange={(e) =>
-                            updateVideoProgress(item, e.target.value)
-                          }
-                          className="mt-2 w-full"
-                        />
-                        <p className="mt-1 text-xs text-slate-500">
-                          80% or more automatically marks the video completed.
-                        </p>
-                      </div>
-                    )}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {["Not started", "In progress", "Completed"].map(
-                        (status) => (
-                          <button
-                            key={status}
-                            onClick={() => updateStatus(item, status)}
-                            className={`rounded-full border px-3 py-1.5 text-xs ${item.status === status ? "border-blue-700 bg-blue-50 text-blue-800" : "bg-white text-slate-600"}`}
-                          >
-                            {status}
-                          </button>
-                        ),
                       )}
                     </div>
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                            {item.type}
+                          </p>
+                          <h3 className="mt-1 font-bold">{item.title}</h3>
+                        </div>
+                        {item.locked ? (
+                          <Lock size={18} className="text-slate-400" />
+                        ) : p.completed ? (
+                          <CheckCircle2 size={19} className="text-green-600" />
+                        ) : (
+                          <PlayCircle size={19} className="text-blue-600" />
+                        )}
+                      </div>
+                      <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                        {item.summary ||
+                          item.body ||
+                          "Career learning resource"}
+                      </p>
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-slate-500">
+                          <span>
+                            {item.locked
+                              ? "Subscription required"
+                              : `${p.percent || 0}% complete`}
+                          </span>
+                          {item.plan !== "free" && <span>{item.plan}+</span>}
+                        </div>
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full bg-blue-600"
+                            style={{
+                              width: `${item.locked ? 0 : p.percent || 0}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => open(item)}
+                        className={`mt-4 w-full rounded-xl px-4 py-2.5 text-sm font-semibold ${item.locked ? "border bg-white text-slate-700" : "bg-blue-700 text-white"}`}
+                      >
+                        {item.locked ? "View subscription" : "Start learning"}
+                      </button>
+                    </div>
                   </article>
-                ))}
-              </div>
-            ) : (
-              <div className="p-10 text-center">
-                <Icon className="mx-auto text-slate-300" size={32} />
-                <h3 className="mt-3 font-semibold">
-                  No{" "}
-                  {categories.find((x) => x.id === active)?.label.toLowerCase()}{" "}
-                  saved yet
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  Add your first resource using the form.
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed bg-white p-12 text-center">
+              <BookOpen className="mx-auto text-slate-300" size={38} />
+              <h3 className="mt-3 font-semibold">
+                No {title.toLowerCase()} available
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Admin has not uploaded any {title.toLowerCase()} yet.
+              </p>
+            </div>
+          )}
+        </section>
+        {selected && (
+          <section className="mt-7 rounded-2xl border bg-white p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                  Now learning
                 </p>
+                <h2 className="mt-1 text-2xl font-bold">{selected.title}</h2>
+                <p className="mt-2 text-slate-600">{selected.summary}</p>
+              </div>
+              <button
+                onClick={() => setSelected(null)}
+                className="rounded-lg border px-3 py-2 text-sm"
+              >
+                Close
+              </button>
+            </div>
+            {selected.type === "video" && selected.url && (
+              <div className="mt-5">
+                <YouTubeEmbed url={selected.url} title={selected.title} />
+                <div className="mt-4 flex items-center gap-3">
+                  <input
+                    aria-label="Video progress"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progress?.percent || 0}
+                    onChange={(e) => saveProgress(Number(e.target.value), 0)}
+                    className="w-full"
+                  />
+                  <span className="w-12 text-right text-sm font-semibold">
+                    {progress?.percent || 0}%
+                  </span>
+                </div>
               </div>
             )}
+            {selected.type !== "video" && selected.url && (
+              <a
+                href={selected.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                Open resource <ExternalLink size={15} />
+              </a>
+            )}
+            <div className="prose mt-6 max-w-none whitespace-pre-wrap text-slate-700">
+              {selected.body || ""}
+            </div>
+            <div className="mt-5 flex items-center gap-3">
+              <button
+                onClick={() => saveProgress(100, 0)}
+                className="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                Mark completed
+              </button>
+              <span className="text-sm text-slate-500">
+                <Clock3 size={15} className="mr-1 inline" />
+                Progress is saved automatically.
+              </span>
+            </div>
           </section>
-        </div>
-        <div className="mt-6 rounded-2xl border bg-white p-5">
-          <h2 className="font-semibold">Career roadmap</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Turn what you learn into milestones and track progress toward a
-            target role.
-          </p>
-          <Link
-            to="/workspace/roadmap"
-            className="mt-3 inline-flex rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
-          >
-            Open roadmap →
-          </Link>
-        </div>
+        )}
       </section>
     </main>
   );

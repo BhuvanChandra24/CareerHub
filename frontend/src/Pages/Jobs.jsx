@@ -199,6 +199,7 @@ export default function Jobs() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [jobsError, setJobsError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -259,6 +260,23 @@ export default function Jobs() {
     fetchJobs(controller.signal);
     return () => controller.abort();
   }, [fetchJobs]);
+
+  const loadApplications = useCallback(async () => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return;
+    try {
+      const r = await fetch(`${API_URL}/api/applications/mine`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) setApplications(d.applications || []);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadApplications();
+  }, [loadApplications]);
 
   const filteredJobs = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -382,6 +400,7 @@ export default function Jobs() {
       }
 
       setSuccess("Application submitted successfully!");
+      loadApplications();
 
       setTimeout(() => {
         setSelectedJob(null);
@@ -641,24 +660,67 @@ export default function Jobs() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4">
-                  {job.applyUrl ? (
-                    <a
-                      href={job.applyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
-                    >
-                      Apply on source <ExternalLink size={15} />
-                    </a>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => openApplication(job)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
-                    >
-                      Submit via CareerHub <ArrowUpRight size={16} />
-                    </button>
-                  )}
+                  {(() => {
+                    const applied = applications.find(
+                      (a) => String(a.jobId) === String(job.id),
+                    );
+                    if (applied)
+                      return (
+                        <Link
+                          to="/applications"
+                          className="inline-flex items-center gap-2 rounded-xl bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-700"
+                        >
+                          <CheckCircle2 size={16} /> Applied · {applied.status}
+                        </Link>
+                      );
+                    if (job.applyUrl)
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          <a
+                            href={job.applyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+                          >
+                            Apply on source <ExternalLink size={15} />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!currentUser) {
+                                navigate(
+                                  `/login?redirect=${encodeURIComponent("/jobs")}`,
+                                );
+                                return;
+                              }
+                              navigate(
+                                `/applications?add=${encodeURIComponent(job.id)}&company=${encodeURIComponent(job.company)}&title=${encodeURIComponent(job.role)}&source=${encodeURIComponent(job.source)}`,
+                              );
+                            }}
+                            className="rounded-xl border px-4 py-2.5 text-sm font-medium"
+                          >
+                            Track application
+                          </button>
+                        </div>
+                      );
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentUser) {
+                            navigate(
+                              `/login?redirect=${encodeURIComponent("/jobs")}`,
+                            );
+                            return;
+                          }
+                          openApplication(job);
+                        }}
+                        className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+                      >
+                        Submit via CareerHub <ArrowUpRight size={16} />
+                      </button>
+                    );
+                  })()}
                   <span className="text-xs text-neutral-400">
                     Live source listing
                   </span>
