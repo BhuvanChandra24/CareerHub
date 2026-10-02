@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import careerHubLogo from "../assets/careerhub.png";
+import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -110,6 +111,14 @@ export default function SignIn() {
       setSubmitting(false);
     }
   };
+
+  const handleGoogleSuccess = () => {
+    const requestedRedirect = new URLSearchParams(window.location.search).get("redirect");
+    const safeRedirect = requestedRedirect && requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//") ? requestedRedirect : "/jobs";
+    navigate(safeRedirect, { replace: true });
+  };
+
+  const handleGoogleError = (message) => setError(message);
 
   return (
     <main className="min-h-screen bg-white text-neutral-950">
@@ -290,6 +299,10 @@ export default function SignIn() {
                 {submitting ? "Signing in..." : "Sign in"} <span>↗</span>
               </button>
             </form>
+
+            <div className="my-5">
+              <GoogleSignInButton remember={name == "SignIn.jsx" ? form.remember : true} onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+            </div>
 
             <div className="my-7 flex items-center gap-4">
               <div className="h-px flex-1 bg-neutral-200" />

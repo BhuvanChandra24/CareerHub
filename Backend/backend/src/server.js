@@ -19,6 +19,7 @@ import aiRoutes from "./routes/aiRoutes.js";
 import trackerRoutes from "./routes/trackerRoutes.js";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
+import companyRoutes from "./routes/companyRoutes.js";
 
 import { stripeWebhook } from "./controllers/billingController.js";
 
@@ -175,6 +176,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/tracker", trackerRoutes);
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/companies", companyRoutes);
 
 // Centralized error handling.
 app.use((err, _req, res, _next) => {

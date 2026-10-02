@@ -12,6 +12,12 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
     passwordHash: { type: String, required: true, select: false },
+    googleId: { type: String, default: "", index: true },
+    authProvider: {
+      type: String,
+      enum: ["local", "google", "google+local"],
+      default: "local",
+    },
     stripeCustomerId: { type: String, default: "", index: true },
     stripeSubscriptionId: { type: String, default: "" },
     subscriptionStatus: { type: String, default: "free" },

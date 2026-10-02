@@ -1,375 +1,417 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
+  ArrowLeft,
   ArrowUpRight,
+  Bot,
   BriefcaseBusiness,
+  FileCheck2,
   FileText,
-  UserRound,
+  Linkedin,
   MessageSquare,
+  Route,
   Sparkles,
   Target,
+  Upload,
 } from "lucide-react";
 import "./AIToolkit.css";
 
-const API_BASE = (
-  import.meta.env.VITE_API_URL || "https://careerhub-dqx.onrender.com/"
+const API = (
+  import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com"
 ).replace(/\/$/, "");
+const token = () =>
+  localStorage.getItem("token") || sessionStorage.getItem("token") || "";
 const tools = [
   {
     id: "resume",
-    tag: "RESUME AI",
     icon: FileText,
-    title: "Resume AI",
+    tag: "RESUME AI",
+    title: "Resume Analysis AI",
     description:
-      "Review resume strengths, gaps and bullet points, with or without a target job description.",
+      "Review your resume structure, skills, strengths, gaps and practical improvements. This is an AI review, not a hiring guarantee.",
+  },
+  {
+    id: "ats",
+    icon: FileCheck2,
+    tag: "ATS SCORE",
+    title: "ATS Score for Resume",
+    description:
+      "Run CareerHub's rule-based screening estimate for sections, contact details, skills and resume content. It is an estimate, not a real employer ATS.",
   },
   {
     id: "job-match",
-    tag: "JOB MATCHING",
     icon: Target,
-    title: "AI Job Matching",
+    tag: "JOB MATCHING",
+    title: "Resume ↔ Job Matching",
     description:
-      "Compare your resume skills against live jobs returned by your configured job providers.",
+      "Compare the skills detected in your resume with jobs returned by your configured providers and see matched skills.",
   },
   {
     id: "cover-letter",
-    tag: "APPLICATIONS",
     icon: BriefcaseBusiness,
-    title: "Cover Letters",
+    tag: "APPLICATIONS",
+    title: "Cover Letter Generation",
     description:
-      "Create a role-specific cover letter grounded in the resume details you provide.",
+      "Generate a job-specific draft from the facts you provide. CareerHub will not invent qualifications or achievements.",
   },
   {
     id: "linkedin",
+    icon: Linkedin,
     tag: "PERSONAL BRAND",
-    icon: UserRound,
     title: "LinkedIn AI",
     description:
-      "Draft a truthful LinkedIn headline, About section, profile summary or connection message.",
+      "Create a truthful headline, About section, profile summary or connection message from your real experience.",
   },
   {
     id: "interview",
-    tag: "PRACTICE",
     icon: MessageSquare,
+    tag: "PRACTICE",
     title: "Interview AI",
     description:
-      "Generate role-specific interview questions and get structured feedback on your answers.",
+      "Generate role-specific questions and receive structured feedback on your answer.",
   },
   {
-    id: "career",
-    tag: "CAREER AI",
-    icon: Sparkles,
-    title: "AI Career Assistant",
+    id: "roadmap",
+    icon: Route,
+    tag: "CAREER PLANNING",
+    title: "AI Career Roadmap",
     description:
-      "Get actionable guidance for career planning, applications and interview preparation.",
+      "Turn your target role, current skills and goals into a practical learning and application roadmap.",
   },
 ];
-const token = () =>
-  localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+
+async function api(path, options = {}) {
+  const response = await fetch(`${API}${path}`, {
+    ...options,
+    headers: { Authorization: `Bearer ${token()}`, ...(options.headers || {}) },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok)
+    throw new Error(data.message || `Request failed (${response.status})`);
+  return data;
+}
 
 export default function AIToolkit() {
   const location = useLocation();
   const navigate = useNavigate();
-  const requestedTool = new URLSearchParams(location.search).get("tool");
-  const [activeTool, setActiveTool] = useState(() =>
-    tools.some(
-      (tool) => tool.id === requestedTool && tool.id !== "cover-letter",
-    )
-      ? requestedTool
-      : null,
+  const requested = new URLSearchParams(location.search).get("tool");
+  const [active, setActive] = useState(
+    tools.some((x) => x.id === requested) ? requested : "",
   );
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [result, setResult] = useState("");
-  const [resultJobs, setResultJobs] = useState([]);
-  const [resumeFile, setResumeFile] = useState(null);
+  const [file, setFile] = useState(null);
   const [jobDescription, setJobDescription] = useState("");
-  const [message, setMessage] = useState("");
-  const [role, setRole] = useState("Frontend Developer");
-  const [level, setLevel] = useState("Fresher");
-  const [count, setCount] = useState(5);
-  const [questions, setQuestions] = useState([]);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answer, setAnswer] = useState("");
-  const [brandingTool, setBrandingTool] = useState("LinkedIn About section");
-  const [brandingDetails, setBrandingDetails] = useState("");
   const [keyword, setKeyword] = useState("");
   const [jobLocation, setJobLocation] = useState("India");
+  const [cover, setCover] = useState({
+    fullName: "",
+    company: "",
+    jobTitle: "",
+    resumeText: "",
+    jobDescription: "",
+    tone: "Professional",
+  });
+  const [brand, setBrand] = useState({
+    type: "LinkedIn About section",
+    details: "",
+  });
+  const [interview, setInterview] = useState({
+    role: "Frontend Developer",
+    level: "Fresher",
+    count: 5,
+    answer: "",
+  });
+  const [roadmap, setRoadmap] = useState({
+    targetRole: "",
+    currentSkills: "",
+    experience: "Fresher",
+    timeline: "3 months",
+  });
+  const [questions, setQuestions] = useState([]);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [result, setResult] = useState("");
+  const [jobs, setJobs] = useState([]);
+  const [ats, setAts] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  const request = async (path, options = {}) => {
-    const response = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      headers: {
-        ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-        ...(options.headers || {}),
-      },
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok)
-      throw new Error(data.message || `Request failed (${response.status})`);
-    return data;
-  };
-  const openTool = (id) => {
-    if (id === "cover-letter") {
-      navigate("/cover-letter");
-      return;
-    }
-    navigate(`/ai-tools?tool=${encodeURIComponent(id)}`);
-    setActiveTool(id);
-    setBusy(false);
+  const open = (id) => {
+    setActive(id);
     setError("");
     setResult("");
-    setResultJobs([]);
+    setJobs([]);
+    setAts(null);
     setQuestions([]);
-    setQuestionIndex(0);
-    setAnswer("");
+    navigate(`/ai-tools?tool=${id}`);
   };
-  const backToTools = () => {
-    setActiveTool(null);
+  const back = () => {
+    setActive("");
     setError("");
-    setResult("");
-    setResultJobs([]);
     navigate("/ai-tools", { replace: true });
   };
-  async function analyzeResume(event) {
-    event.preventDefault();
-    if (!resumeFile) return setError("Choose a PDF or DOCX resume first.");
+  const requireFile = () => {
+    if (!file) {
+      setError("Upload your PDF or DOCX resume first.");
+      return false;
+    }
+    return true;
+  };
+
+  const submitFileAI = async (endpoint, extra = {}) => {
+    if (!requireFile()) return;
     setBusy(true);
     setError("");
     setResult("");
     try {
       const form = new FormData();
-      form.append("resume", resumeFile);
-      form.append("jobDescription", jobDescription);
-      const data = await request("/api/ai/resume/analyze", {
-        method: "POST",
-        body: form,
-      });
-      setResult(data.result || "No analysis was returned.");
+      form.append("resume", file);
+      Object.entries(extra).forEach(([k, v]) => form.append(k, v));
+      const data = await api(endpoint, { method: "POST", body: form });
+      return data;
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
-  }
-  async function matchJobs(event) {
-    event.preventDefault();
-    if (!resumeFile) return setError("Choose a PDF or DOCX resume first.");
+  };
+
+  const analyze = async (e) => {
+    e.preventDefault();
+    const data = await submitFileAI("/api/ai/resume/analyze", {
+      jobDescription,
+    });
+    if (data) setResult(data.result || "No analysis returned.");
+  };
+  const atsScore = async (e) => {
+    e.preventDefault();
+    if (!requireFile()) return;
     setBusy(true);
     setError("");
-    setResultJobs([]);
-    setResult("");
     try {
       const form = new FormData();
-      form.append("resume", resumeFile);
-      form.append("keyword", keyword);
-      form.append("location", jobLocation);
-      const data = await request("/api/resume/match-jobs", {
+      form.append("resume", file);
+      const data = await api("/api/resume/analyze", {
         method: "POST",
         body: form,
       });
-      setResultJobs(Array.isArray(data.jobs) ? data.jobs : []);
-      setResult(
-        `Skills found in your resume: ${(data.extractedSkills || []).join(", ") || "No recognized skills were found."}`,
-      );
+      setAts(data);
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
-  }
-  async function askAssistant(event) {
-    event.preventDefault();
-    if (!message.trim()) return setError("Enter a question or career goal.");
+  };
+  const match = async (e) => {
+    e.preventDefault();
+    const data = await submitFileAI("/api/resume/match-jobs", {
+      keyword,
+      location: jobLocation,
+    });
+    if (data) setJobs(data.jobs || []);
+  };
+  const coverLetter = async (e) => {
+    e.preventDefault();
     setBusy(true);
     setError("");
     setResult("");
     try {
-      const data = await request("/api/ai/career-assistant", {
+      const data = await api("/api/ai/cover-letter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: message.trim(),
-          context: { targetRole: role, level },
-        }),
+        body: JSON.stringify(cover),
       });
-      setResult(data.result || "No response was returned.");
+      setResult(data.result || "No cover letter returned.");
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
-  }
-  async function generateQuestions(event) {
-    event.preventDefault();
-    if (!role.trim()) return setError("Enter an interview role.");
+  };
+  const branding = async (e) => {
+    e.preventDefault();
     setBusy(true);
     setError("");
     setResult("");
+    try {
+      const data = await api("/api/ai/branding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool: brand.type, details: brand.details }),
+      });
+      setResult(data.result || "No content returned.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const generateInterview = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
     setQuestions([]);
     try {
-      const data = await request("/api/ai/mock-interview/questions", {
+      const data = await api("/api/ai/mock-interview/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, level, count: Number(count) }),
+        body: JSON.stringify({
+          role: interview.role,
+          level: interview.level,
+          count: Number(interview.count),
+        }),
       });
-      const list = Array.isArray(data.questions) ? data.questions : [];
-      if (!list.length)
-        throw new Error(
-          "The AI returned no interview questions. Please try again.",
-        );
-      setQuestions(list);
+      setQuestions(data.questions || []);
       setQuestionIndex(0);
-      setAnswer("");
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
-  }
-  async function evaluateAnswer(event) {
-    event.preventDefault();
-    const question = questions[questionIndex];
-    if (!answer.trim())
-      return setError("Write your answer before requesting feedback.");
+  };
+  const evaluate = async (e) => {
+    e.preventDefault();
+    const q = questions[questionIndex];
+    if (!q || !interview.answer.trim()) {
+      setError("Write your answer first.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const data = await api("/api/ai/mock-interview/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: interview.role,
+          level: interview.level,
+          question: q.question || q,
+          answer: interview.answer,
+        }),
+      });
+      setResult(data.result || "No feedback returned.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const generateRoadmap = async (e) => {
+    e.preventDefault();
     setBusy(true);
     setError("");
     setResult("");
     try {
-      const data = await request("/api/ai/mock-interview/evaluate", {
+      const data = await api("/api/ai/career-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role,
-          level,
-          question: question.question || question,
-          answer: answer.trim(),
+          message: `Create a practical career roadmap for the target role ${roadmap.targetRole}. Current skills: ${roadmap.currentSkills}. Experience: ${roadmap.experience}. Timeline: ${roadmap.timeline}. Include skills to learn, projects, interview preparation and job-search actions. Clearly separate assumptions from user-provided facts.`,
+          context: {
+            targetRole: roadmap.targetRole,
+            level: roadmap.experience,
+          },
         }),
       });
-      setResult(data.result || "No feedback was returned.");
+      setResult(data.result || "No roadmap returned.");
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
-  }
-  async function generateBranding(event) {
-    event.preventDefault();
-    if (!brandingDetails.trim())
-      return setError(
-        "Add your real skills, projects and experience so the draft can stay accurate.",
-      );
-    setBusy(true);
-    setError("");
-    setResult("");
-    try {
-      const data = await request("/api/ai/branding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tool: brandingTool,
-          details: brandingDetails.trim(),
-        }),
-      });
-      setResult(data.result || "No content was returned.");
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  };
 
   return (
     <main className="ai-toolkit">
+      <header className="ai-toolkit__nav">
+        <Link to="/" className="font-bold text-xl">
+          CareerHub
+        </Link>
+        <nav>
+          <Link to="/jobs">Jobs</Link>
+          <Link to="/learning">Career Learning</Link>
+          <Link to="/applications">Applications</Link>
+        </nav>
+      </header>
       <section className="ai-toolkit__hero">
         <span className="ai-toolkit__eyebrow">CAREERHUB · AI TOOLS</span>
-        <h1>AI tools for every career move.</h1>
+        <h1>AI tools for each step of your career.</h1>
         <p>
-          Analyze your resume, match real jobs, write application materials,
-          build your professional brand and practice interviews. Results depend
-          on your configured AI and job-provider APIs.
+          Choose a tool, provide the information it actually needs, and get a
+          focused result. CareerHub labels estimates clearly and does not
+          promise hiring outcomes.
         </p>
       </section>
-      {!activeTool ? (
-        <section className="ai-toolkit__grid" aria-label="AI career tools">
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <article className="ai-tool-card" key={tool.id}>
-                <div className="ai-tool-card__top">
-                  <span className="ai-tool-card__icon" aria-hidden="true">
-                    <Icon size={25} />
-                  </span>
-                  <span className="ai-tool-card__tag">{tool.tag}</span>
-                </div>
-                <h2>{tool.title}</h2>
-                <p>{tool.description}</p>
-                <button
-                  className="ai-tool-card__link"
-                  onClick={() => openTool(tool.id)}
-                >
-                  Open tool <span aria-hidden="true">↗</span>
-                </button>
-              </article>
-            );
-          })}
+      {!active ? (
+        <section className="ai-toolkit__grid">
+          {tools.map(({ id, icon: Icon, tag, title, description }) => (
+            <article className="ai-tool-card" key={id}>
+              <div className="ai-tool-card__top">
+                <span className="ai-tool-card__icon">
+                  <Icon size={24} />
+                </span>
+                <span className="ai-tool-card__tag">{tag}</span>
+              </div>
+              <h2>{title}</h2>
+              <p>{description}</p>
+              <button className="ai-tool-card__link" onClick={() => open(id)}>
+                Open tool <ArrowUpRight size={16} />
+              </button>
+            </article>
+          ))}
         </section>
       ) : (
-        <section className="ai-workspace">
-          <div className="ai-workspace__heading">
-            <button className="ai-back" onClick={backToTools}>
-              ← All AI tools
-            </button>
-            <h2>{tools.find((tool) => tool.id === activeTool)?.title}</h2>
-            <p>
-              AI-generated drafts are suggestions, not guarantees. Review
-              results before using them in an application.
-            </p>
+        <section className="ai-toolkit__workspace">
+          <button className="ai-tool-back" onClick={back}>
+            <ArrowLeft size={16} /> All AI tools
+          </button>
+          <div className="ai-tool-workspace__head">
+            <div>
+              <span className="ai-toolkit__eyebrow">
+                {tools.find((x) => x.id === active)?.tag}
+              </span>
+              <h2>{tools.find((x) => x.id === active)?.title}</h2>
+              <p>{tools.find((x) => x.id === active)?.description}</p>
+            </div>
           </div>
-          {activeTool === "resume" && (
-            <form className="ai-form" onSubmit={analyzeResume}>
+          {error && <div className="ai-error">{error}</div>}
+          {active === "resume" && (
+            <form onSubmit={analyze} className="ai-form">
+              <FileUpload file={file} setFile={setFile} />
               <label>
-                Resume file (PDF or DOCX)
-                <input
-                  required
-                  type="file"
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                />
-              </label>
-              <label>
-                Target job description{" "}
-                <span className="ai-optional">Optional</span>
+                Target job description (optional)
                 <textarea
-                  rows="5"
+                  rows="7"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description to compare your resume…"
+                  placeholder="Paste the job description if you want a role-specific review."
                 />
               </label>
-              <button className="ai-primary" disabled={busy}>
-                {busy ? "Analyzing resume…" : "Analyze resume"}
+              <button disabled={busy}>
+                {busy ? "Analyzing…" : "Analyze resume"}
               </button>
             </form>
           )}
-          {activeTool === "job-match" && (
-            <form className="ai-form" onSubmit={matchJobs}>
-              <label>
-                Resume file (PDF or DOCX)
-                <input
-                  required
-                  type="file"
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                />
-              </label>
-              <div className="ai-form__row">
+          {active === "ats" && (
+            <form onSubmit={atsScore} className="ai-form">
+              <FileUpload file={file} setFile={setFile} />
+              <p className="ai-note">
+                This score is CareerHub's rule-based screening estimate. It is
+                not an employer's proprietary ATS score.
+              </p>
+              <button disabled={busy}>
+                {busy ? "Checking…" : "Calculate ATS estimate"}
+              </button>
+            </form>
+          )}
+          {active === "job-match" && (
+            <form onSubmit={match} className="ai-form">
+              <FileUpload file={file} setFile={setFile} />
+              <div className="ai-form-grid">
                 <label>
-                  Target role or keyword
+                  Keyword
                   <input
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="e.g. React Developer"
+                    placeholder="React, Java, Data Analyst..."
                   />
                 </label>
                 <label>
@@ -377,258 +419,320 @@ export default function AIToolkit() {
                   <input
                     value={jobLocation}
                     onChange={(e) => setJobLocation(e.target.value)}
-                    placeholder="India"
                   />
                 </label>
               </div>
-              <button className="ai-primary" disabled={busy}>
-                {busy ? "Matching your resume…" : "Find matching jobs"}
+              <button disabled={busy}>
+                {busy ? "Matching…" : "Match my resume to jobs"}
               </button>
-              <p className="ai-optional">
-                Requires a working Adzuna or Jooble API key in the backend
-                environment. No sample jobs are inserted.
-              </p>
             </form>
           )}
-          {activeTool === "career" && (
-            <form className="ai-form" onSubmit={askAssistant}>
-              <div className="ai-form__row">
+          {active === "cover-letter" && (
+            <form onSubmit={coverLetter} className="ai-form">
+              <div className="ai-form-grid">
+                {[
+                  ["fullName", "Your name"],
+                  ["company", "Company"],
+                  ["jobTitle", "Job title"],
+                ].map(([k, l]) => (
+                  <label key={k}>
+                    {l}
+                    <input
+                      required
+                      value={cover[k]}
+                      onChange={(e) =>
+                        setCover({ ...cover, [k]: e.target.value })
+                      }
+                    />
+                  </label>
+                ))}
                 <label>
-                  Target role
-                  <input
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    placeholder="e.g. MERN Stack Developer"
-                  />
-                </label>
-                <label>
-                  Experience level
+                  Tone
                   <select
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
+                    value={cover.tone}
+                    onChange={(e) =>
+                      setCover({ ...cover, tone: e.target.value })
+                    }
                   >
-                    <option>Fresher</option>
-                    <option>Intern</option>
-                    <option>0–2 years</option>
-                    <option>3–5 years</option>
-                    <option>Experienced</option>
+                    <option>Professional</option>
+                    <option>Warm and confident</option>
+                    <option>Concise</option>
                   </select>
                 </label>
               </div>
               <label>
-                What would you like help with?
+                Resume facts
                 <textarea
-                  required
-                  rows="5"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="e.g. Build a 6-week React interview preparation plan…"
+                  rows="6"
+                  value={cover.resumeText}
+                  onChange={(e) =>
+                    setCover({ ...cover, resumeText: e.target.value })
+                  }
+                  placeholder="Only include real skills, projects, education and experience."
                 />
               </label>
-              <button className="ai-primary" disabled={busy}>
-                {busy ? "Thinking…" : "Ask CareerHub AI"}
+              <label>
+                Job description
+                <textarea
+                  required
+                  rows="7"
+                  value={cover.jobDescription}
+                  onChange={(e) =>
+                    setCover({ ...cover, jobDescription: e.target.value })
+                  }
+                />
+              </label>
+              <button disabled={busy}>
+                {busy ? "Generating…" : "Generate cover letter"}
               </button>
             </form>
           )}
-          {activeTool === "linkedin" && (
-            <form className="ai-form" onSubmit={generateBranding}>
+          {active === "linkedin" && (
+            <form onSubmit={branding} className="ai-form">
               <label>
-                Content type
+                What should AI create?
                 <select
-                  value={brandingTool}
-                  onChange={(e) => setBrandingTool(e.target.value)}
+                  value={brand.type}
+                  onChange={(e) => setBrand({ ...brand, type: e.target.value })}
                 >
                   <option>LinkedIn headline</option>
                   <option>LinkedIn About section</option>
                   <option>LinkedIn profile summary</option>
-                  <option>Connection request message</option>
-                  <option>Professional bio</option>
+                  <option>LinkedIn connection message</option>
                 </select>
               </label>
               <label>
-                Your real skills, projects, education and goals
+                Your real skills, projects and experience
                 <textarea
                   required
-                  rows="7"
-                  value={brandingDetails}
-                  onChange={(e) => setBrandingDetails(e.target.value)}
-                  placeholder="Add only details that are true about you. The AI will not invent experience or credentials."
+                  rows="9"
+                  value={brand.details}
+                  onChange={(e) =>
+                    setBrand({ ...brand, details: e.target.value })
+                  }
+                  placeholder="Add facts only. CareerHub will not invent achievements."
                 />
               </label>
-              <button className="ai-primary" disabled={busy}>
-                {busy ? "Drafting…" : "Generate professional content"}
+              <button disabled={busy}>
+                {busy ? "Writing…" : "Generate LinkedIn content"}
               </button>
             </form>
           )}
-          {activeTool === "interview" && (
-            <div className="ai-form">
-              <form onSubmit={generateQuestions}>
-                <div className="ai-form__row">
-                  <label>
-                    Interview role
-                    <input
-                      required
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      placeholder="e.g. React Developer"
-                    />
-                  </label>
-                  <label>
-                    Level
-                    <select
-                      value={level}
-                      onChange={(e) => setLevel(e.target.value)}
-                    >
-                      <option>Fresher</option>
-                      <option>Intern</option>
-                      <option>Junior</option>
-                      <option>Mid-level</option>
-                      <option>Senior</option>
-                    </select>
-                  </label>
-                  <label>
-                    Questions
-                    <select
-                      value={count}
-                      onChange={(e) => setCount(e.target.value)}
-                    >
-                      <option value="3">3</option>
-                      <option value="5">5</option>
-                      <option value="10">10</option>
-                    </select>
-                  </label>
-                </div>
-                <button className="ai-primary" disabled={busy}>
-                  {busy
-                    ? "Preparing questions…"
-                    : "Generate interview questions"}
-                </button>
-              </form>
+          {active === "interview" && (
+            <form onSubmit={generateInterview} className="ai-form">
+              <div className="ai-form-grid">
+                <label>
+                  Target role
+                  <input
+                    required
+                    value={interview.role}
+                    onChange={(e) =>
+                      setInterview({ ...interview, role: e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  Level
+                  <select
+                    value={interview.level}
+                    onChange={(e) =>
+                      setInterview({ ...interview, level: e.target.value })
+                    }
+                  >
+                    <option>Fresher</option>
+                    <option>Junior</option>
+                    <option>Mid-level</option>
+                  </select>
+                </label>
+                <label>
+                  Questions
+                  <select
+                    value={interview.count}
+                    onChange={(e) =>
+                      setInterview({ ...interview, count: e.target.value })
+                    }
+                  >
+                    <option>5</option>
+                    <option>8</option>
+                    <option>10</option>
+                  </select>
+                </label>
+              </div>
+              <button disabled={busy}>
+                {busy ? "Generating…" : "Generate interview questions"}
+              </button>
               {questions.length > 0 && (
-                <form className="ai-question" onSubmit={evaluateAnswer}>
-                  <div className="ai-question__meta">
+                <div className="ai-question">
+                  <p className="text-xs font-semibold uppercase tracking-wide">
                     Question {questionIndex + 1} of {questions.length}
-                  </div>
+                  </p>
                   <h3>
-                    {questions[questionIndex].question ||
+                    {questions[questionIndex]?.question ||
                       questions[questionIndex]}
                   </h3>
-                  {questions[questionIndex].focus && (
-                    <p>{questions[questionIndex].focus}</p>
-                  )}
-                  <label>
-                    Your answer
-                    <textarea
-                      rows="6"
-                      value={answer}
-                      onChange={(e) => setAnswer(e.target.value)}
-                      placeholder="Write your answer as if speaking to an interviewer…"
-                    />
-                  </label>
-                  <button className="ai-primary" disabled={busy}>
-                    {busy ? "Reviewing answer…" : "Get feedback"}
-                  </button>
-                  {questionIndex < questions.length - 1 && (
+                  <textarea
+                    rows="7"
+                    value={interview.answer}
+                    onChange={(e) =>
+                      setInterview({ ...interview, answer: e.target.value })
+                    }
+                    placeholder="Write your answer here..."
+                  />
+                  <div className="flex gap-2">
                     <button
                       type="button"
-                      className="ai-secondary"
+                      className="secondary"
+                      disabled={questionIndex === 0}
+                      onClick={() =>
+                        setQuestionIndex(Math.max(0, questionIndex - 1))
+                      }
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      disabled={questionIndex === questions.length - 1}
                       onClick={() => {
-                        setQuestionIndex((i) => i + 1);
-                        setAnswer("");
-                        setResult("");
-                        setError("");
+                        setQuestionIndex(
+                          Math.min(questions.length - 1, questionIndex + 1),
+                        );
+                        setInterview({ ...interview, answer: "" });
                       }}
                     >
-                      Skip to next question
+                      Next
                     </button>
-                  )}
-                </form>
+                    <button type="button" onClick={evaluate} disabled={busy}>
+                      Evaluate answer
+                    </button>
+                  </div>
+                </div>
               )}
-            </div>
+            </form>
           )}
-          {error && (
-            <div className="ai-alert ai-alert--error" role="alert">
-              {error}
-            </div>
+          {active === "roadmap" && (
+            <form onSubmit={generateRoadmap} className="ai-form">
+              <div className="ai-form-grid">
+                <label>
+                  Target role
+                  <input
+                    required
+                    value={roadmap.targetRole}
+                    onChange={(e) =>
+                      setRoadmap({ ...roadmap, targetRole: e.target.value })
+                    }
+                    placeholder="Full Stack Developer"
+                  />
+                </label>
+                <label>
+                  Experience
+                  <select
+                    value={roadmap.experience}
+                    onChange={(e) =>
+                      setRoadmap({ ...roadmap, experience: e.target.value })
+                    }
+                  >
+                    <option>Fresher</option>
+                    <option>Junior</option>
+                    <option>Mid-level</option>
+                  </select>
+                </label>
+                <label>
+                  Timeline
+                  <select
+                    value={roadmap.timeline}
+                    onChange={(e) =>
+                      setRoadmap({ ...roadmap, timeline: e.target.value })
+                    }
+                  >
+                    <option>3 months</option>
+                    <option>6 months</option>
+                    <option>12 months</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Current skills
+                <textarea
+                  required
+                  rows="6"
+                  value={roadmap.currentSkills}
+                  onChange={(e) =>
+                    setRoadmap({ ...roadmap, currentSkills: e.target.value })
+                  }
+                  placeholder="React, Node.js, MongoDB..."
+                />
+              </label>
+              <button disabled={busy}>
+                {busy ? "Building roadmap…" : "Generate career roadmap"}
+              </button>
+            </form>
+          )}
+          {ats && (
+            <Result title="ATS screening estimate">
+              <div className="ats-score">
+                {ats.atsScore ?? ats.score}
+                <span>/100</span>
+              </div>
+              <p>{ats.summary}</p>
+              {ats.improvements?.length > 0 && (
+                <ul>
+                  {ats.improvements.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+              )}
+            </Result>
           )}
           {result && (
-            <section className="ai-result" aria-live="polite">
-              <h3>
-                {activeTool === "job-match" ? "Resume skills" : "AI result"}
-              </h3>
+            <Result title="AI result">
               <pre>{result}</pre>
-            </section>
+            </Result>
           )}
-          {resultJobs.length > 0 && (
-            <section className="ai-result">
-              <h3>Matching jobs ({resultJobs.length})</h3>
-              <div className="space-y-3">
-                {resultJobs.map((job) => (
-                  <article
-                    key={job.id || job.applyUrl}
-                    className="rounded-xl border bg-white p-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h4 className="font-semibold">
-                          {job.title || job.role}
-                        </h4>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {job.company} · {job.location}
-                        </p>
-                        <p className="mt-2 text-sm">
-                          Matched skills:{" "}
-                          {(job.matchedSkills || []).join(", ") ||
-                            "No direct skill matches"}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-800">
-                        {job.matchScore ?? 0}% match
-                      </span>
-                    </div>
-                    {job.applyUrl && (
-                      <a
-                        href={job.applyUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-700"
-                      >
-                        View original listing <ArrowUpRight size={15} />
-                      </a>
-                    )}
+          {jobs.length > 0 && (
+            <Result title={`Matched jobs (${jobs.length})`}>
+              <div className="ai-jobs">
+                {jobs.slice(0, 20).map((job, i) => (
+                  <article key={job.id || i}>
+                    <h4>{job.title || job.role}</h4>
+                    <p>
+                      {job.company ||
+                        job.company_name ||
+                        "Company not specified"}{" "}
+                      · {job.location || "Location not specified"}
+                    </p>
+                    <span>
+                      {job.matchPercentage ?? job.matchScore ?? 0}% skill match
+                    </span>
                   </article>
                 ))}
               </div>
-            </section>
-          )}
-          {activeTool === "job-match" && result && resultJobs.length === 0 && (
-            <p className="mt-4 text-sm text-slate-600">
-              No matching listings were returned. Check provider credentials and
-              try a broader role or location.
-            </p>
+            </Result>
           )}
         </section>
       )}
-      <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
-        <button
-          onClick={() => navigate("/cover-letter")}
-          className="rounded-xl border bg-white px-4 py-2.5 font-semibold"
-        >
-          Open Cover Letter Generator
-        </button>
-        <button
-          onClick={() => navigate("/resume-jobs")}
-          className="rounded-xl border bg-white px-4 py-2.5 font-semibold"
-        >
-          Open Resume Job Match
-        </button>
-        <button
-          onClick={() => navigate("/billing")}
-          className="rounded-xl border bg-white px-4 py-2.5 font-semibold"
-        >
-          Subscription & Billing
-        </button>
-      </div>
     </main>
+  );
+}
+
+function FileUpload({ file, setFile }) {
+  return (
+    <label className="ai-upload">
+      <Upload size={19} />
+      <span>{file ? file.name : "Upload your PDF or DOCX resume"}</span>
+      <input
+        type="file"
+        accept=".pdf,.docx"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+    </label>
+  );
+}
+function Result({ title, children }) {
+  return (
+    <section className="ai-result">
+      <h3>{title}</h3>
+      {children}
+    </section>
   );
 }

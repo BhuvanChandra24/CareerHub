@@ -145,7 +145,19 @@ export default function LandingPage() {
     setMenuOpen(false);
 
     if (id === "jobs") {
-      navigate("/jobs");
+      navigate("/jobs-hub");
+      return;
+    }
+
+    if (id === "ai-tools") {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      navigate(token ? "/ai-tools" : `/login?redirect=${encodeURIComponent("/ai-tools")}`);
+      return;
+    }
+
+    if (id === "learning") {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      navigate(token ? "/learning" : `/login?redirect=${encodeURIComponent("/learning")}`);
       return;
     }
 
@@ -167,6 +179,7 @@ export default function LandingPage() {
     { label: "Home", id: "home" },
     { label: "Jobs", id: "jobs" },
     { label: "AI Tools", id: "ai-tools" },
+    { label: "Career Learning", id: "learning" },
   ];
 
   return (
@@ -192,22 +205,9 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-8 md:flex">
             {navItems.map((item) =>
               item.id === "jobs" ? (
-                <Link
-                  key={item.id}
-                  to="/jobs"
-                  className="text-sm font-medium text-neutral-600 transition hover:text-black"
-                >
-                  {item.label}
-                </Link>
+                <Link key={item.id} to="/jobs-hub" className="text-sm font-medium text-neutral-600 transition hover:text-black">{item.label}</Link>
               ) : (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => goToSection(item.id)}
-                  className="text-sm font-medium text-neutral-600 transition hover:text-black"
-                >
-                  {item.label}
-                </button>
+                <button key={item.id} type="button" onClick={() => goToSection(item.id)} className="text-sm font-medium text-neutral-600 transition hover:text-black">{item.label}</button>
               ),
             )}
           </nav>
@@ -701,7 +701,7 @@ export default function LandingPage() {
                 Features
               </button>
 
-              <Link to="/jobs" className="hover:text-black">
+              <Link to="/jobs-hub" className="hover:text-black">
                 Jobs
               </Link>
 

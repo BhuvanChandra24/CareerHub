@@ -21,6 +21,8 @@ import CareerWorkspace from "./Pages/CareerWorkspace.jsx";
 import CareerLearning from "./Pages/CareerLearning.jsx";
 import Billing from "./Pages/Billing.jsx";
 import InfoPage from "./Pages/InfoPage.jsx";
+import Companies from "./Pages/Companies.jsx";
+import JobsCRM from "./Pages/JobsCRM.jsx";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL || "https://careerhub-dqxt.onrender.com/"
@@ -100,7 +102,9 @@ export default function App() {
         <Route path="/signin" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<Navigate to="/signup" replace />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/jobs-hub" element={<JobsCRM />} />
         <Route path="/jobs" element={<Jobs />} />
+        <Route path="/companies" element={<RequireAuth><Companies /></RequireAuth>} />
         <Route path="/resume-optimizer" element={<ResumeATS />} />
         <Route path="/resume-jobs" element={<ResumeJobs />} />
         <Route
