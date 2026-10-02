@@ -50,6 +50,8 @@ export default function SiteNavbar() {
 
   const displayName = user?.fullName || user?.name || "My Profile";
   const isAdmin = user?.role === "admin";
+  const isAdminPage =
+    location.pathname === "/admin" || location.pathname.startsWith("/admin/");
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -79,26 +81,30 @@ export default function SiteNavbar() {
           <img src={careerHubLogo} alt="CareerHub" />
         </Link>
 
-        <nav className="ch-navbar__links" aria-label="Primary navigation">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.exact}
-              onClick={(event) => openProtected(event, item)}
-              className={({ isActive }) =>
-                `ch-navbar__link ${isActive ? "is-active" : ""}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        {!isAdminPage && (
+          <>
+            <nav className="ch-navbar__links" aria-label="Primary navigation">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  end={item.exact}
+                  onClick={(event) => openProtected(event, item)}
+                  className={({ isActive }) =>
+                    `ch-navbar__link ${isActive ? "is-active" : ""}`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
 
-        {isAdmin && (
-          <Link to="/admin" className="ch-navbar__link">
-            Admin
-          </Link>
+            {isAdmin && (
+              <Link to="/admin" className="ch-navbar__link">
+                Admin
+              </Link>
+            )}
+          </>
         )}
 
         <div className="ch-navbar__actions">
@@ -141,7 +147,7 @@ export default function SiteNavbar() {
         </button>
       </div>
 
-      {menuOpen && (
+      {menuOpen && !isAdminPage && (
         <div className="ch-navbar__mobile">
           <nav aria-label="Mobile navigation">
             {navItems.map((item) => (
