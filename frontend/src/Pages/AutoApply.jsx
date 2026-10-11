@@ -121,7 +121,7 @@ export default function AutoApply({ jobs = [], onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/60 p-3 pt-4 backdrop-blur-sm sm:items-center sm:p-5"
+      className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onClose?.();
       }}
@@ -130,7 +130,7 @@ export default function AutoApply({ jobs = [], onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="auto-apply-title"
-        className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="my-auto max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
       >
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-neutral-200 bg-white px-5 py-4 sm:px-7">
           <div>
@@ -138,10 +138,10 @@ export default function AutoApply({ jobs = [], onClose }) {
               <Sparkles size={14} /> CareerHub automation
             </p>
             <h2 id="auto-apply-title" className="mt-1 text-xl font-semibold text-neutral-950">
-              Auto Apply to matching jobs
+              {jobs.length === 1 ? "Auto Apply to this job" : "Auto Apply to displayed jobs"}
             </h2>
             <p className="mt-1 text-sm text-neutral-500">
-              Check {jobs.length} currently displayed {jobs.length === 1 ? "job" : "jobs"} against your resume.
+              {jobs.length === 1 ? "Process this job" : `Process ${jobs.length} displayed jobs`} against your resume.
             </p>
           </div>
           <button
@@ -227,7 +227,8 @@ export default function AutoApply({ jobs = [], onClose }) {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
                   ["Checked", results.summary?.checked ?? results.results?.length ?? 0],
-                  ["Ready to apply", results.summary?.eligible ?? 0],
+                  ["Applied", results.summary?.submitted ?? 0],
+                  ["Not applied", (results.results || []).filter((item) => item.decision === "eligible" && item.applicationStatus !== "submitted").length],
                   ["Resume mismatch", results.summary?.resumeMismatch ?? 0],
                   ["Skipped", results.summary?.skipped ?? 0],
                 ].map(([label, value]) => (
@@ -238,7 +239,7 @@ export default function AutoApply({ jobs = [], onClose }) {
                 ))}
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-                <strong>Application status:</strong> CareerHub has checked these jobs against your resume. External listings do not provide a universal submission API, so opening an employer application page is not the same as submitting an application. Use the application link below to complete the employer's form; CareerHub must only mark it submitted after a real confirmation.
+                <strong>Submission note:</strong> CareerHub counts a job as Applied only after an authorized employer/provider integration confirms submission. The current Adzuna/Jooble listing feeds provide job listings, not a universal application-submission API. Eligible jobs without a supported integration are shown as Not applied, with an employer link when available.
               </div>
               <div className="max-h-[42vh] space-y-3 overflow-y-auto pr-1">
                 {(results.results || []).map((item) => (
@@ -248,15 +249,15 @@ export default function AutoApply({ jobs = [], onClose }) {
                         <h3 className="font-semibold text-neutral-900">{item.title}</h3>
                         <p className="mt-1 text-sm text-neutral-500">{item.company} · {item.location || "Location not specified"}</p>
                       </div>
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.decision === "eligible" ? "bg-green-50 text-green-700" : item.decision === "resume_mismatch" ? "bg-amber-50 text-amber-800" : "bg-neutral-100 text-neutral-600"}`}>
-                        {item.decision === "eligible" ? "Eligible" : item.decision === "resume_mismatch" ? "Resume mismatch" : "Skipped"} · {item.matchScore}%
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.applicationStatus === "submitted" ? "bg-green-50 text-green-700" : item.decision === "resume_mismatch" ? "bg-amber-50 text-amber-800" : item.decision === "skipped" ? "bg-neutral-100 text-neutral-600" : "bg-red-50 text-red-700"}`}>
+                        {item.applicationStatus === "submitted" ? "Applied" : item.decision === "resume_mismatch" ? "Not applied · Resume mismatch" : item.decision === "skipped" ? "Not applied · Ineligible" : "Not applied · Submission integration unavailable"}
                       </span>
                     </div>
                     {item.reasons?.length > 0 && <p className="mt-2 text-sm leading-5 text-neutral-600">{item.reasons.join(" ")}</p>}
                     {item.missingSkills?.length > 0 && <p className="mt-2 text-xs text-neutral-500">Not found in resume: {item.missingSkills.slice(0, 8).join(", ")}</p>}
                     {item.decision === "eligible" && item.applyUrl && (
                       <a href={item.applyUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800">
-                        Continue to company application <ExternalLink size={15} />
+                        Continue on employer site <ExternalLink size={15} />
                       </a>
                     )}
                     {item.decision === "eligible" && !item.applyUrl && (
@@ -266,7 +267,7 @@ export default function AutoApply({ jobs = [], onClose }) {
                 ))}
               </div>
               <div className="flex flex-wrap justify-between gap-3">
-                <button type="button" onClick={() => { setResults(null); setError(""); }} className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Check again</button>
+                <button type="button" onClick={() => { setResults(null); setError(""); }} className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Run again</button>
                 <button type="button" onClick={onClose} className="rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800">Done</button>
               </div>
             </div>

@@ -206,6 +206,14 @@ export default function Jobs() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [showAutoApply, setShowAutoApply] = useState(false);
   const [autoApplyJobs, setAutoApplyJobs] = useState([]);
+  const openAutoApply = (targetJobs) => {
+    if (!currentUser) {
+      navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
+      return;
+    }
+    setAutoApplyJobs(Array.isArray(targetJobs) ? targetJobs : [targetJobs]);
+    setShowAutoApply(true);
+  };
 
   const fetchJobs = useCallback(async (signal) => {
     setLoadingJobs(true);
@@ -535,14 +543,7 @@ export default function Jobs() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => {
-                if (!currentUser) {
-                  navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
-                  return;
-                }
-                setAutoApplyJobs(filteredJobs);
-                setShowAutoApply(true);
-              }}
+              onClick={() => openAutoApply(filteredJobs)}
               disabled={loadingJobs || filteredJobs.length === 0}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -678,21 +679,6 @@ export default function Jobs() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!currentUser) {
-                        navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
-                        return;
-                      }
-                      setAutoApplyJobs([job]);
-                      setShowAutoApply(true);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
-                    title={`Check resume fit for ${job.role}`}
-                  >
-                    <Sparkles size={15} /> Auto Apply
-                  </button>
                   {(() => {
                     const applied = applications.find(
                       (a) => String(a.jobId) === String(job.id),
@@ -754,8 +740,26 @@ export default function Jobs() {
                       </button>
                     );
                   })()}
+                  <button
+
+                    type="button"
+
+                    onClick={() => openAutoApply([job])}
+
+                    className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+
+                    aria-label={`Auto apply to ${job.role} at ${job.company}`}
+
+                  >
+
+                    <Sparkles size={15} /> Auto Apply
+
+                  </button>
+
                   <span className="text-xs text-neutral-400">
+
                     Live source listing
+
                   </span>
                 </div>
               </article>
@@ -789,7 +793,7 @@ export default function Jobs() {
       {/* Auto Apply modal */}
       {showAutoApply && (
         <AutoApply
-          jobs={autoApplyJobs}
+          jobs={filteredJobs}
           onClose={() => setShowAutoApply(false)}
         />
       )}

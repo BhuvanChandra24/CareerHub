@@ -1,14 +1,19 @@
 import { Router } from "express";
-import { matchDisplayedJobs } from "../controllers/autoApplyController.js";
 import { requireAuth } from "../middleware/auth.js";
+import { matchDisplayedJobs } from "../controllers/autoApplyController.js";
 
 const router = Router();
-
+router.use(requireAuth);
 
 router.post(
   "/match",
-  requireAuth,
-  (req, res, next) => req.app.locals.resumeUpload.single("resume")(req, res, next),
+  (req, res, next) => {
+    const upload = req.app.locals.resumeUpload;
+    if (!upload) {
+      return res.status(500).json({ message: "Resume upload middleware is not configured." });
+    }
+    upload.single("resume")(req, res, next);
+  },
   matchDisplayedJobs,
 );
 
