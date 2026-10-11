@@ -205,6 +205,7 @@ export default function Jobs() {
   const [jobsError, setJobsError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [showAutoApply, setShowAutoApply] = useState(false);
+  const [autoApplyJobs, setAutoApplyJobs] = useState([]);
 
   const fetchJobs = useCallback(async (signal) => {
     setLoadingJobs(true);
@@ -539,6 +540,7 @@ export default function Jobs() {
                   navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
                   return;
                 }
+                setAutoApplyJobs(filteredJobs);
                 setShowAutoApply(true);
               }}
               disabled={loadingJobs || filteredJobs.length === 0}
@@ -676,6 +678,21 @@ export default function Jobs() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!currentUser) {
+                        navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
+                        return;
+                      }
+                      setAutoApplyJobs([job]);
+                      setShowAutoApply(true);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                    title={`Check resume fit for ${job.role}`}
+                  >
+                    <Sparkles size={15} /> Auto Apply
+                  </button>
                   {(() => {
                     const applied = applications.find(
                       (a) => String(a.jobId) === String(job.id),
@@ -772,7 +789,7 @@ export default function Jobs() {
       {/* Auto Apply modal */}
       {showAutoApply && (
         <AutoApply
-          jobs={filteredJobs}
+          jobs={autoApplyJobs}
           onClose={() => setShowAutoApply(false)}
         />
       )}

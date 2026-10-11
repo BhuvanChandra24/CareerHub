@@ -121,7 +121,7 @@ export default function AutoApply({ jobs = [], onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/60 p-3 pt-4 backdrop-blur-sm sm:items-center sm:p-5"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onClose?.();
       }}
@@ -130,7 +130,7 @@ export default function AutoApply({ jobs = [], onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="auto-apply-title"
-        className="my-auto max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
       >
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-neutral-200 bg-white px-5 py-4 sm:px-7">
           <div>
@@ -227,7 +227,7 @@ export default function AutoApply({ jobs = [], onClose }) {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
                   ["Checked", results.summary?.checked ?? results.results?.length ?? 0],
-                  ["Matches", results.summary?.eligible ?? 0],
+                  ["Ready to apply", results.summary?.eligible ?? 0],
                   ["Resume mismatch", results.summary?.resumeMismatch ?? 0],
                   ["Skipped", results.summary?.skipped ?? 0],
                 ].map(([label, value]) => (
@@ -238,7 +238,7 @@ export default function AutoApply({ jobs = [], onClose }) {
                 ))}
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-                <strong>Submission note:</strong> This run checks eligibility and prepares matching jobs. Your current Adzuna/Jooble listing feed does not itself submit applications to employers. For jobs with an external application link, open the employer page to finish the application. CareerHub will not label a job as applied unless a submission is actually confirmed.
+                <strong>Application status:</strong> CareerHub has checked these jobs against your resume. External listings do not provide a universal submission API, so opening an employer application page is not the same as submitting an application. Use the application link below to complete the employer's form; CareerHub must only mark it submitted after a real confirmation.
               </div>
               <div className="max-h-[42vh] space-y-3 overflow-y-auto pr-1">
                 {(results.results || []).map((item) => (
@@ -256,7 +256,7 @@ export default function AutoApply({ jobs = [], onClose }) {
                     {item.missingSkills?.length > 0 && <p className="mt-2 text-xs text-neutral-500">Not found in resume: {item.missingSkills.slice(0, 8).join(", ")}</p>}
                     {item.decision === "eligible" && item.applyUrl && (
                       <a href={item.applyUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800">
-                        Open application page <ExternalLink size={15} />
+                        Continue to company application <ExternalLink size={15} />
                       </a>
                     )}
                     {item.decision === "eligible" && !item.applyUrl && (
