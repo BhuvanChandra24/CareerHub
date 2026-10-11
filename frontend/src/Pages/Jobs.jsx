@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import AutoApply from "./AutoApply";
 import {
   Search,
   MapPin,
@@ -203,6 +204,7 @@ export default function Jobs() {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [jobsError, setJobsError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [showAutoApply, setShowAutoApply] = useState(false);
 
   const fetchJobs = useCallback(async (signal) => {
     setLoadingJobs(true);
@@ -530,6 +532,20 @@ export default function Jobs() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (!currentUser) {
+                  navigate(`/login?redirect=${encodeURIComponent("/jobs")}`);
+                  return;
+                }
+                setShowAutoApply(true);
+              }}
+              disabled={loadingJobs || filteredJobs.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Sparkles size={15} /> Auto Apply
+            </button>
             {lastUpdated && (
               <span className="text-xs text-neutral-400">
                 Updated{" "}
@@ -752,6 +768,14 @@ export default function Jobs() {
           </div>
         )}
       </section>
+
+      {/* Auto Apply modal */}
+      {showAutoApply && (
+        <AutoApply
+          jobs={filteredJobs}
+          onClose={() => setShowAutoApply(false)}
+        />
+      )}
 
       {/* Application modal */}
       {selectedJob && (
