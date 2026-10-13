@@ -198,7 +198,7 @@ function contactEngine(text) {
 
 function parseEngine(text, file) {
   const words = terms(text).length;
-  const replacementChars = (text.match(/ /g) || []).length;
+  const replacementChars = (text.match(/\\uFFFD/g) || []).length;
   const lines = text
     .split(/\r?\n/)
     .map((x) => x.trim())

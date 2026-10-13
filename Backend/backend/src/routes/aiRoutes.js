@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { generateAIText } from "../services/aiService.js";
+import { generateAIText, getAIStatus } from "../services/aiService.js";
 import { extractResumeText } from "../services/resumeService.js";
 import { requireAuth } from "../middleware/auth.js";
 import { requireText } from "../utils.js";
@@ -102,13 +102,13 @@ router.post(
         questions = JSON.parse(clean);
       } catch {
         const e = new Error(
-          "Gemini returned questions in an unexpected format. Retry.",
+          "The AI provider returned questions in an unexpected format. Please retry.",
         );
         e.status = 502;
         throw e;
       }
       if (!Array.isArray(questions)) {
-        const e = new Error("Gemini returned an invalid question list.");
+        const e = new Error("The AI provider returned an invalid question list. Please retry.");
         e.status = 502;
         throw e;
       }
