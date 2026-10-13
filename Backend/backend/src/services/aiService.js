@@ -4,7 +4,7 @@ const GROQ_API_KEY = (process.env.GROQ_API_KEY || "").trim();
 const GROQ_MODEL = (process.env.GROQ_MODEL || "openai/gpt-oss-20b").trim();
 const GROQ_BASE_URL = (
   process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1"
-).replace(/\\/$/ "", "");
+).replace(/\\/$, "");
 
 export function getAIStatus() {
   return {
